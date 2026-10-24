@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plant Disease Advisor</title>
+  <style>
+    :root {
+      --g900: #14532d; --g700: #1b7a3e; --g600: #228b4a; --g200: #bfe3cb; --g100: #e6f4ea; --g50: #f3faf5;
+      --ink: #1f2933; --muted: #6b7785; --line: #e3e8ee; --bg: #f4f7f5; --card: #ffffff;
+      --amber: #b45309; --amber-bg: #fff4e0; --amber-line: #f6d9a8;
+      --red: #b3261e; --red-bg: #fdecea;
+      --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 4px 14px rgba(16, 24, 40, .06);
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+           background: var(--bg); color: var(--ink); line-height: 1.5; }
+    h1, h2, h3, h4, p { margin: 0; }
+    .muted { color: var(--muted); font-size: 14px; }
+
+    /* ---------- header ---------- */
+    header { height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+             background: linear-gradient(135deg, var(--g900), var(--g600)); color: #fff; position: sticky; top: 0; z-index: 20; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: .2px; }
+    .brand .logo { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.16);
+                   display: grid; place-items: center; font-size: 20px; }
+    .head-right { display: flex; align-items: center; gap: 12px; }
+    .chip { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.14); padding: 5px 12px 5px 6px; border-radius: 999px; font-size: 14px; }
+    .avatar { width: 26px; height: 26px; border-radius: 50%; background: #fff; color: var(--g700);
+              display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+    .hbtn { background: rgba(255,255,255,.16); color: #fff; border: 0; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .hbtn:hover { background: rgba(255,255,255,.26); }
+    details.settings { position: relative; }
+    details.settings summary { list-style: none; cursor: pointer; padding: 7px 10px; border-radius: 8px; background: rgba(255,255,255,.16); }
+    details.settings summary::-webkit-details-marker { display: none; }
+    .pop { position: absolute; right: 0; top: 44px; background: #fff; color: var(--ink); padding: 12px; border-radius: 12px;
+           box-shadow: var(--shadow); width: 290px; border: 1px solid var(--line); }
+    .pop label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    .pop input { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
+
+    /* ---------- login ---------- */
+    #loginView { min-height: calc(100vh - 60px); display: grid; place-items: center; padding: 20px; }
+    .auth-card { width: 100%; max-width: 400px; background: var(--card); border-radius: 18px; box-shadow: var(--shadow); padding: 28px; border: 1px solid var(--line); }
+    .auth-card .hero { font-size: 40px; text-align: center; }
+    .auth-card h2 { text-align: center; margin: 6px 0 2px; color: var(--g900); }
+    .auth-card .muted { text-align: center; display: block; margin-bottom: 18px; }
+    .tabs { display: flex; background: var(--g50); border-radius: 10px; padding: 4px; margin-bottom: 16px; }
+    .tabs button { flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+    .tabs button.on { background: #fff; color: var(--g700); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    .field input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; }
+    .field input:focus, .pop input:focus { outline: 2px solid var(--g200); border-color: var(--g600); }
+    .btn { background: var(--g600); color: #fff; border: 0; padding: 11px 18px; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; }
+    .btn:hover { background: var(--g700); }
+    .btn:disabled { background: #b8c4bc; cursor: not-allowed; }
+    .btn.full { width: 100%; }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 500; padding: 7px 12px; font-size: 14px; }
+    .btn.ghost.danger:hover { color: var(--red); border-color: var(--red); background: var(--red-bg); }
+    .alert { padding: 10px 12px; border-radius: 10px; font-size: 14px; margin-top: 12px; }
+    .alert.err { background: var(--red-bg); color: var(--red); }
+    .alert.ok { background: var(--g100); color: var(--g700); }
+    .alert.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line); }
+
+    /* ---------- app layout ---------- */
+    #appView { display: grid; grid-template-columns: 310px 1fr; height: calc(100vh - 60px); }
+    aside { background: var(--card); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+    .side-top { padding: 14px; border-bottom: 1px solid var(--line); }
+    .side-title { padding: 12px 16px 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+    #histList { overflow-y: auto; padding: 4px 8px 12px; flex: 1; }
+    .hist { display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; }
+    .hist:hover { background: var(--g50); }
+    .hist.active { background: var(--g100); border-color: var(--g200); }
+    .hist-main { flex: 1; min-width: 0; }
+    .hist-title { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hist-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; }
+    .badge.hi { background: #d7f0df; color: #14673a; }
+    .badge.mid { background: #fdf0c8; color: #8a6100; }
+    .badge.lo { background: var(--amber-bg); color: var(--amber); }
+    .del { border: 0; background: transparent; cursor: pointer; opacity: 0; font-size: 15px; padding: 4px; border-radius: 6px; }
+    .hist:hover .del, .hist.active .del { opacity: .7; }
+    .del:hover { opacity: 1 !important; background: var(--red-bg); }
+    .empty { text-align: center; color: var(--muted); font-size: 14px; padding: 30px 14px; }
+
+    main { overflow-y: auto; padding: 24px; min-width: 0; }
+    .panel { max-width: 720px; margin: 0 auto; background: var(--card); border-radius: 18px; box-shadow: var(--shadow); border: 1px solid var(--line); padding: 26px; }
+    .panel h2 { color: var(--g900); margin-bottom: 4px; }
+    .drop { display: grid; place-items: center; text-align: center; margin: 18px 0; min-height: 220px; border: 2px dashed var(--g200);
+            border-radius: 16px; background: var(--g50); cursor: pointer; padding: 18px; transition: .15s; }
+    .drop:hover, .drop.over { border-color: var(--g600); background: var(--g100); }
+    .drop-icon { font-size: 38px; }
+    .drop span { color: var(--muted); font-size: 14px; display: block; }
+    .pv { max-width: 100%; max-height: 260px; border-radius: 12px; display: block; margin: 0 auto 8px; }
+    .typing { margin-top: 14px; color: var(--muted); font-size: 14px; }
+    .typing::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%;
+                     background: var(--g600); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+
+    /* ---------- chat view ---------- */
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .chat-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .chat-head h2 { color: var(--g900); font-size: 22px; }
+    .chat { display: flex; flex-direction: column; gap: 18px; }
+    .msg { display: flex; gap: 10px; align-items: flex-start; }
+    .msg.user { justify-content: flex-end; }
+    .bot-av { width: 36px; height: 36px; border-radius: 50%; background: var(--g600); color: #fff; display: grid; place-items: center; flex: none; }
+    .bubble { border-radius: 18px; padding: 14px 16px; max-width: 100%; }
+    .bubble.me { background: var(--g100); border: 1px solid var(--g200); border-bottom-right-radius: 6px; max-width: 320px; }
+    .bubble.bot { background: var(--card); border: 1px solid var(--line); border-top-left-radius: 6px; box-shadow: var(--shadow); flex: 1; min-width: 0; }
+    .thumb { width: 100%; max-height: 240px; object-fit: cover; border-radius: 12px; display: block; margin-bottom: 8px; }
+    .thumb.ph { height: 110px; background: #fff; display: grid; place-items: center; text-align: center; color: var(--muted); font-size: 13px; }
+    .thumb.ph span { display: block; }
+    .cap { font-size: 13px; color: var(--g700); font-weight: 600; }
+    .crop { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); }
+    .dname { font-size: 24px; font-weight: 700; color: var(--g900); margin: 2px 0 10px; }
+    .conf { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
+    .conf-bar { flex: 1; height: 8px; background: #edf1ee; border-radius: 999px; overflow: hidden; max-width: 260px; }
+    .conf-bar i { display: block; height: 100%; border-radius: 999px; }
+    .conf-bar i.hi { background: #22a455; } .conf-bar i.mid { background: #e0a800; } .conf-bar i.lo { background: #e07b00; }
+    .summary { font-size: 15px; margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+    .tile { background: var(--g50); border: 1px solid var(--g100); border-radius: 12px; padding: 12px 14px; }
+    .tile h4 { font-size: 13px; color: var(--g700); margin-bottom: 6px; }
+    .tile ul { margin: 0; padding-left: 18px; font-size: 14px; }
+    .tile li { margin-bottom: 3px; }
+    .src, .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+    .disclaimer { text-align: center; font-size: 12px; color: var(--muted); margin: 22px 0 6px; }
+
+    @media (max-width: 820px) {
+      #appView { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; min-height: calc(100vh - 60px); }
+      aside { max-height: 36vh; border-right: 0; border-bottom: 1px solid var(--line); }
+      main { padding: 14px; overflow: visible; }
+      .del { opacity: .6; }
+      .chip span.nm { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="logo">🌿</div> Plant Disease Advisor</div>
+    <div class="head-right">
+      <details class="settings">
+        <summary title="Settings">⚙️</summary>
+        <div class="pop">
+          <label for="apiUrl">API URL</label>
+          <input id="apiUrl" type="text" value="http://127.0.0.1:8000">
+        </div>
+      </details>
+      <div class="chip" id="userChip" hidden><div class="avatar" id="avatar">?</div><span class="nm" id="userName"></span></div>
+      <button class="hbtn" id="logoutBtn" hidden>Log out</button>
+    </div>
+  </header>
+
+  <!-- ===== login / register ===== -->
+  <section id="loginView">
+    <div class="auth-card">
+      <div class="hero">🍃</div>
+      <h2>Welcome</h2>
+      <span class="muted">Diagnose plant leaf diseases from a photo</span>
+      <div class="tabs">
+        <button type="button" id="tabLogin" class="on">Log in</button>
+        <button type="button" id="tabReg">Register</button>
+      </div>
+      <form id="authForm">
+        <div class="field"><label for="username">Username</label><input id="username" autocomplete="username" required minlength="3"></div>
+        <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required minlength="8"></div>
+        <button class="btn full" id="authBtn" type="submit">Log in</button>
+        <div id="authMsg"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== app ===== -->
+  <section id="appView" hidden>
+    <aside>
+      <div class="side-top"><button class="btn full" id="newBtn">＋ New diagnosis</button></div>
+      <div class="side-title">History</div>
+      <div id="histList"></div>
+    </aside>
+    <main id="main"></main>
+  </section>
+
+  <script>
+    let token = sessionStorage.getItem("token");
+    let activeId = null;
+    let mode = "login";
+    const thumbs = {};                       // record id -> local preview of the photo uploaded this session
+
+    const $ = id => document.getElementById(id);
+    const base = () => $("apiUrl").value.trim().replace(/\/$/, "");
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+    function parseLabel(label) {
+      const [c, d] = label.split("___");
+      const clean = s => (s || "").replace(/_/g, " ").replace(/\s+/g, " ").trim();
+      let disease = clean(d);
+      if (/^healthy$/i.test(disease)) disease = "Healthy";
+      return { crop: clean(c), disease };
+    }
+    // the API stores UTC without a timezone marker; add "Z" so the browser converts to local time
+    function toDate(s) { return new Date(/(Z|[+-]\d\d:?\d\d)$/i.test(s) ? s : s + "Z"); }
+    function fmt(s) { return toDate(s).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }); }
+    function confClass(c) { return c >= 0.9 ? "hi" : c >= 0.7 ? "mid" : "lo"; }
+
+    async function api(path, options = {}) {
+      const headers = options.headers || {};
+      if (token) headers["Authorization"] = "Bearer " + token;
+      const res = await fetch(base() + path, { ...options, headers });
+      if (res.status === 401 && token && !path.startsWith("/auth/login")) {
+        logout();
+        throw new Error("Session expired, please log in again");
+      }
+      if (res.status === 204) return null;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        let msg = "Request failed (" + res.status + ")";
+        if (typeof data.detail === "string") msg = data.detail;
+        else if (Array.isArray(data.detail)) msg = data.detail.map(d => d.msg).join("; ");
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    /* ---------- auth ---------- */
+    function setView(v) {
+      $("loginView").hidden = v !== "login";
+      $("appView").hidden = v !== "app";
+      $("userChip").hidden = v !== "app";
+      $("logoutBtn").hidden = v !== "app";
+    }
+    function setMode(m) {
+      mode = m;
+      $("tabLogin").classList.toggle("on", m === "login");
+      $("tabReg").classList.toggle("on", m === "register");
+      $("authBtn").textContent = m === "login" ? "Log in" : "Create account";
+      $("password").autocomplete = m === "login" ? "current-password" : "new-password";
+      $("authMsg").innerHTML = "";
+    }
+    $("tabLogin").onclick = () => setMode("login");
+    $("tabReg").onclick = () => setMode("register");
+
+    $("authForm").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const msg = $("authMsg"), btn = $("authBtn");
+      const u = $("username").value, p = $("password").value;
+      btn.disabled = true;
+      msg.innerHTML = "";
+      try {
+        if (mode === "register") {
+          await api("/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: u, password: p })
+          });
+        }
+        token = null;
+        const data = await api("/auth/login", { method: "POST", body: new URLSearchParams({ username: u, password: p }) });
+        token = data.access_token;
+        sessionStorage.setItem("token", token);
+        const me = await api("/auth/me");
+        $("password").value = "";
+        await enterApp(me.username);
+      } catch (e) {
+        msg.innerHTML = '<div class="alert err">' + esc(e.message) + "</div>";
+      } finally { btn.disabled = false; }
+    });
+
+    function logout() {
+      token = null;
+      activeId = null;
+      sessionStorage.removeItem("token");
+      $("histList").innerHTML = "";
+      $("main").innerHTML = "";
+      setView("login");
+    }
+    $("logoutBtn").onclick = logout;
+
+    async function enterApp(username) {
+      setView("app");
+      $("userName").textContent = username;
+      $("avatar").textContent = username.charAt(0).toUpperCase();
+      openNew();
+      await loadHistory();
+    }
+
+    /* ---------- history sidebar ---------- */
+    async function loadHistory() {
+      const box = $("histList");
+      try {
+        const rows = await api("/predictions?limit=100");
+        if (!rows.length) {
+          box.innerHTML = '<div class="empty">No diagnoses yet.<br>Upload your first leaf photo.</div>';
+          return;
+        }
+        box.innerHTML = rows.map(r => {
+          const p = parseLabel(r.disease);
+          const unsure = r.status === "uncertain";
+          const cls = unsure ? "lo" : confClass(r.confidence);
+          return `<div class="hist ${r.id === activeId ? "active" : ""}" data-id="${r.id}">
+              <div class="hist-main">
+                <div class="hist-title">${esc(unsure ? "Unclear photo" : p.disease)}</div>
+                <div class="hist-sub">${esc(unsure ? "Guess: " + p.disease : p.crop)} · ${esc(fmt(r.created_at))}</div>
+              </div>
+              <span class="badge ${cls}">${Math.round(r.confidence * 100)}%</span>
+              <button class="del" data-del="${r.id}" title="Delete" aria-label="Delete">🗑</button>
+            </div>`;
+        }).join("");
+      } catch (e) {
+        box.innerHTML = '<div class="empty" style="color:var(--red)">' + esc(e.message) + "</div>";
+      }
+    }
+    function markActive() {
+      document.querySelectorAll(".hist").forEach(el => el.classList.toggle("active", Number(el.dataset.id) === activeId));
+    }
+
+    $("histList").addEventListener("click", (ev) => {
+      const del = ev.target.closest("[data-del]");
+      if (del) { ev.stopPropagation(); deleteRecord(Number(del.dataset.del)); return; }
+      const item = ev.target.closest(".hist");
+      if (item) openRecord(Number(item.dataset.id));
+    });
+    $("newBtn").onclick = openNew;
+
+    async function deleteRecord(id) {
+      if (!confirm("Delete diagnosis #" + id + "? This cannot be undone.")) return;
+      try {
+        await api("/predictions/" + id, { method: "DELETE" });
+        delete thumbs[id];
+        if (activeId === id) openNew();
+        await loadHistory();
+      } catch (e) { alert(e.message); }
+    }
+
+    /* ---------- new diagnosis view ---------- */
+    function openNew() {
+      activeId = null;
+      markActive();
+      $("main").innerHTML = `
+        <div class="panel">
+          <h2>New diagnosis</h2>
+          <p class="muted">Upload a clear, close-up photo of a single leaf.</p>
+          <label class="drop" id="drop">
+            <input type="file" id="imageInput" accept="image/png, image/jpeg" hidden>
+            <div id="dropInner">
+              <div class="drop-icon">📷</div>
+              <b>Choose a photo</b>
+              <span>or drag and drop it here (JPEG or PNG)</span>
+            </div>
+          </label>
+          <button class="btn" id="goBtn" disabled>Diagnose</button>
+          <div id="newMsg"></div>
+        </div>`;
+
+      const input = $("imageInput"), drop = $("drop");
+      input.addEventListener("change", () => {
+        const f = input.files[0];
+        if (!f) return;
+        $("dropInner").innerHTML = `<img class="pv" src="${URL.createObjectURL(f)}" alt="Selected leaf"><span>${esc(f.name)} · click to change</span>`;
+        $("goBtn").disabled = false;
+        $("newMsg").innerHTML = "";
+      });
+      ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+      ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+      drop.addEventListener("drop", e => {
+        if (e.dataTransfer.files.length) {
+          input.files = e.dataTransfer.files;
+          input.dispatchEvent(new Event("change"));
+        }
+      });
+      $("goBtn").addEventListener("click", diagnose);
+    }
+
+    async function diagnose() {
+      const file = $("imageInput").files[0];
+      const btn = $("goBtn"), msg = $("newMsg");
+      if (!file) return;
+      btn.disabled = true;
+      msg.innerHTML = '<div class="typing">Analysing your leaf</div>';
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const data = await api("/predict", { method: "POST", body: form });
+        thumbs[data.record_id] = URL.createObjectURL(file);
+        await loadHistory();
+        await openRecord(data.record_id);
+      } catch (e) {
+        msg.innerHTML = '<div class="alert err">' + esc(e.message) + "</div>";
+        btn.disabled = false;
+      }
+    }
+
+    /* ---------- saved diagnosis (chat style) ---------- */
+    async function openRecord(id) {
+      activeId = id;
+      markActive();
+      $("main").innerHTML = '<div class="wrap"><div class="typing">Loading</div></div>';
+      try {
+        const r = await api("/predictions/" + id);
+        $("main").innerHTML = renderRecord(r);
+        $("main").scrollTop = 0;
+      } catch (e) {
+        $("main").innerHTML = '<div class="wrap"><div class="alert err">' + esc(e.message) + "</div></div>";
+      }
+    }
+
+    function listTile(title, icon, items) {
+      if (!items || !items.length) return "";
+      return `<div class="tile"><h4>${icon} ${title}</h4><ul>${items.map(i => "<li>" + esc(i) + "</li>").join("")}</ul></div>`;
+    }
+
+    function renderRecord(r) {
+      const p = parseLabel(r.disease);
+      const pct = (r.confidence * 100).toFixed(1);
+      const unsure = r.status === "uncertain";
+      const cls = unsure ? "lo" : confClass(r.confidence);
+      const thumb = thumbs[r.id]
+        ? `<img class="thumb" src="${thumbs[r.id]}" alt="Uploaded leaf">`
+        : `<div class="thumb ph"><div>🍃<span>Photo not stored</span></div></div>`;
+
+      let answer;
+      if (unsure) {
+        answer = `<div class="alert warn" style="margin-top:0"><b>I'm not sure about this one.</b><br>
+            The model is not confident about this image. Please upload a clear, close-up photo of a single leaf.</div>
+          <div class="conf" style="margin-top:14px"><div class="conf-bar"><i class="lo" style="width:${pct}%"></i></div>
+            <span>Best guess: ${esc(p.disease)} (${esc(p.crop)}) · ${pct}%</span></div>`;
+      } else {
+        const e = r.explanation;
+        let body = "";
+        if (e) {
+          const src = e.source === "llm" ? "AI model" : e.source === "knowledge_base" ? "built-in knowledge base" : "";
+          body = `<p class="summary">${esc(e.summary)}</p>
+            <div class="grid">
+              ${listTile("Symptoms", "🔍", e.symptoms)}
+              ${listTile("Causes", "🧪", e.causes)}
+              ${listTile("Prevention", "🛡️", e.prevention)}
+            </div>
+            ${src ? `<p class="src">Explanation source: ${src}</p>` : ""}`;
+        } else {
+          body = '<p class="muted">No explanation is stored for this record.</p>';
+        }
+        answer = `<div class="crop">${esc(p.crop)}</div>
+          <div class="dname">${esc(p.disease)}</div>
+          <div class="conf"><div class="conf-bar"><i class="${cls}" style="width:${pct}%"></i></div><span>${pct}% confidence</span></div>
+          ${body}`;
+      }
+      const note = r.note ? `<p class="note">📝 ${esc(r.note)}</p>` : "";
+
+      return `<div class="wrap">
+        <div class="chat-head">
+          <div><h2>Diagnosis #${r.id}</h2><span class="muted">${esc(fmt(r.created_at))}</span></div>
+          <button class="btn ghost danger" data-del-main="${r.id}">🗑 Delete</button>
+        </div>
+        <div class="chat">
+          <div class="msg user"><div class="bubble me">${thumb}<div class="cap">Leaf photo uploaded</div></div></div>
+          <div class="msg"><div class="bot-av">🌿</div><div class="bubble bot">${answer}${note}</div></div>
+        </div>
+        <p class="disclaimer">General guidance only. Please consult a local agriculture officer for treatment advice.</p>
+      </div>`;
+    }
+
+    $("main").addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-del-main]");
+      if (b) deleteRecord(Number(b.dataset.delMain));
+    });
+
+    /* ---------- start ---------- */
+    setMode("login");
+    if (token) {
+      api("/auth/me").then(me => enterApp(me.username)).catch(() => logout());
+    } else {
+      setView("login");
+    }
+  </script>
+</body>
+</html>
