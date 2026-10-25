@@ -191,6 +191,10 @@
 
     const $ = id => document.getElementById(id);
     const base = () => $("apiUrl").value.trim().replace(/\/$/, "");
+        // when served from CloudFront (not your laptop), call the API on the same address under /api
+    if (location.protocol.startsWith("http") && !["127.0.0.1", "localhost"].includes(location.hostname)) {
+      $("apiUrl").value = "/api";
+    }
     const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
     function parseLabel(label) {
