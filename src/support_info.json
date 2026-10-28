@@ -4,136 +4,333 @@
       "type": "Online",
       "name": "BigHaat",
       "url": "https://www.bighaat.com",
-      "note": "Pan-India delivery, COD available, agro-expert chat support"
+      "note": "Online store for agro-inputs. Check that the seller is licensed and the product is registered for your crop."
     },
     {
       "type": "Online",
       "name": "AgroStar",
       "url": "https://www.agrostar.in",
-      "note": "App-based, farmer community support, quick delivery"
+      "note": "Online store for agro-inputs. Check that the seller is licensed and the product is registered for your crop."
     },
     {
       "type": "Online",
-      "name": "Krishidukan",
-      "url": "https://www.krishidukan.com",
-      "note": "Wide range of fungicides, pesticides, and bio-inputs"
+      "name": "IFFCO eBazar",
+      "url": "https://www.iffcobazar.in",
+      "note": "Online store for crop inputs. Check that the seller is licensed and the product is registered for your crop."
     },
     {
       "type": "Government",
-      "name": "State Agriculture Department (Krishi Kendra)",
-      "url": "https://agricoop.nic.in",
-      "note": "Subsidised products available at local Krishi Kendras; ask your block agriculture officer"
+      "name": "State Agriculture Department / Krishi Vigyan Kendra (KVK)",
+      "url": null,
+      "note": "Visit your nearest KVK or district agriculture office for advice and information on approved inputs."
     },
     {
       "type": "Local",
-      "name": "Nearest Agro-input dealer",
+      "name": "Licensed local agro-input dealer",
       "url": null,
-      "note": "Ask your local agriculture officer for the nearest certified agro-input dealer"
+      "note": "Buy only from a licensed dealer, and keep the bill and batch number."
     }
   ],
-  "_default_helpline": "Kisan Call Centre: 1800-180-1551 (Toll Free, 24x7)",
+  "_disclaimer": "These are general, commonly used active-ingredient groups and bio-agents, not a prescription, and no doses are given. Registered products and rules vary by crop and state, so always get written guidance from your local agricultural officer or Krishi Vigyan Kendra before buying or applying anything. Listed stores are examples, not endorsements, and you should buy only from licensed sellers. Wrong products or wrong use can harm crops, people, and the environment.",
   "Apple___Apple_scab": {
-    "recommended_products": ["Copper-based fungicide", "Captan WP", "Mancozeb WP"],
-    "note": "Apply at bud burst and after rain events in spring."
+    "recommended_products": [
+      "Contact protectant fungicide (e.g., captan or mancozeb)",
+      "Copper-based fungicide"
+    ],
+    "note": "Rake up and destroy fallen leaves, and prune the canopy for better airflow."
   },
   "Apple___Black_rot": {
-    "recommended_products": ["Captan WP", "Thiophanate-methyl", "Copper fungicide"],
-    "note": "Prune infected wood before applying any fungicide."
+    "recommended_products": [
+      "Protective fungicide (e.g., captan)",
+      "Copper-based spray",
+      "Wound-protectant paste for pruning cuts"
+    ],
+    "note": "Prune out dead wood and cankers, and remove mummified fruit before any spraying."
   },
   "Apple___Cedar_apple_rust": {
-    "recommended_products": ["Myclobutanil", "Propiconazole", "Copper fungicide"],
-    "note": "Apply at pink bud stage and repeat after rain."
+    "recommended_products": [
+      "DMI-group fungicide (e.g., myclobutanil)",
+      "Protective contact fungicide (e.g., mancozeb)"
+    ],
+    "note": "Remove nearby juniper or red cedar trees where practical, since the disease needs both hosts."
+  },
+  "Apple___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Compost or vermicompost to support tree health"
+    ],
+    "note": "Keep the canopy pruned for airflow and inspect leaves and fruit regularly."
+  },
+  "Blueberry___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Organic mulch to help keep the soil acidic",
+      "Soil-test-based nutrition only if a test shows a need"
+    ],
+    "note": "Use drip irrigation and avoid wetting the leaves."
   },
   "Cherry_(including_sour)___Powdery_mildew": {
-    "recommended_products": ["Sulphur dust/WP", "Potassium bicarbonate", "Myclobutanil"],
-    "note": "Start applications when first symptoms appear."
+    "recommended_products": [
+      "Wettable sulphur formulation",
+      "Potassium bicarbonate spray",
+      "Triazole-group fungicide (only on agricultural officer's advice)"
+    ],
+    "note": "Act at the first signs, and avoid sulphur sprays in very hot weather because they can burn leaves."
+  },
+  "Cherry_(including_sour)___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Balanced, soil-test-based nutrition and compost"
+    ],
+    "note": "Prune for airflow and remove fallen leaves and fruit."
   },
   "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
-    "recommended_products": ["Azoxystrobin", "Propiconazole", "Mancozeb WP"],
-    "note": "Apply at first sign of lesions, especially in humid conditions."
+    "recommended_products": [
+      "Strobilurin-group fungicide (e.g., azoxystrobin)",
+      "Triazole-group fungicide (e.g., propiconazole)",
+      "Protective multi-site fungicide (e.g., mancozeb)"
+    ],
+    "note": "Check lower leaves regularly, rotate with non-cereal crops, and bury or remove crop residue after harvest."
   },
   "Corn_(maize)___Common_rust_": {
-    "recommended_products": ["Propiconazole", "Azoxystrobin", "Mancozeb WP"],
-    "note": "Scout regularly; apply fungicide if more than 50% of plants are affected."
+    "recommended_products": [
+      "Triazole-group fungicide (e.g., propiconazole or tebuconazole)",
+      "Protective fungicide (e.g., mancozeb)"
+    ],
+    "note": "Use resistant hybrids, and monitor fields in cool, damp weather. Treat only if the infection is spreading."
   },
   "Corn_(maize)___Northern_Leaf_Blight": {
-    "recommended_products": ["Azoxystrobin", "Propiconazole", "Pyraclostrobin"],
-    "note": "Apply at VT/R1 growth stage for best protection."
+    "recommended_products": [
+      "Strobilurin and triazole combination fungicide",
+      "Protective contact fungicide (e.g., mancozeb)",
+      "Bio-control agent (Pseudomonas fluorescens)"
+    ],
+    "note": "Bury or remove infected crop residue and avoid growing maize on the same field year after year."
+  },
+  "Corn_(maize)___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Bio-fertilisers (e.g., Azotobacter, phosphate-solubilising bacteria)",
+      "Balanced, soil-test-based fertilisation"
+    ],
+    "note": "Keep scouting the field and maintain recommended plant spacing."
   },
   "Grape___Black_rot": {
-    "recommended_products": ["Captan WP", "Myclobutanil", "Mancozeb WP"],
-    "note": "Apply from bud swell through fruit set."
+    "recommended_products": [
+      "Protective fungicide (e.g., mancozeb)",
+      "Copper-based protectant",
+      "Systemic triazole fungicide (only on agricultural officer's advice)"
+    ],
+    "note": "Remove all mummified berries from the vines and the ground, and keep the canopy open."
   },
   "Grape___Esca_(Black_Measles)": {
-    "recommended_products": ["No chemical cure available — focus on wound protection"],
-    "note": "Use wound sealants after pruning. Consult your agriculture officer."
+    "recommended_products": [
+      "No curative chemical is available",
+      "Pruning-wound sealant paste",
+      "Trichoderma-based pruning-wound protector"
+    ],
+    "note": "Avoid large pruning wounds in wet weather, disinfect pruning tools between vines, and remove severely affected vines."
   },
   "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
-    "recommended_products": ["Copper oxychloride", "Mancozeb WP", "Carbendazim"],
-    "note": "Apply during humid periods and after rain."
+    "recommended_products": [
+      "Copper-based spray (e.g., copper oxychloride or Bordeaux mixture)",
+      "Protective fungicide (e.g., mancozeb or chlorothalonil)",
+      "Systemic fungicide (only on agricultural officer's advice)"
+    ],
+    "note": "Remove fallen infected leaves and keep the canopy open for airflow."
+  },
+  "Grape___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Canopy management for sunlight and airflow",
+      "Organic soil enrichers such as farmyard manure"
+    ],
+    "note": "Maintain trellis training and balanced feeding."
   },
   "Orange___Haunglongbing_(Citrus_greening)": {
-    "recommended_products": ["Imidacloprid (for psyllid control)", "Thiamethoxam"],
-    "note": "No cure exists for HLB. Focus on psyllid control and removing infected trees."
+    "recommended_products": [
+      "No curative chemical is available for this bacterial disease",
+      "Insect control for the Asian citrus psyllid, using only products approved by your agricultural officer",
+      "Neem-based formulation to help deter the psyllid",
+      "Zinc and iron micronutrient spray to ease deficiency symptoms (this does not cure the disease)"
+    ],
+    "note": "Remove severely infected trees, plant only certified disease-free material, and report suspected cases to the agriculture department."
   },
   "Peach___Bacterial_spot": {
-    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Oxytetracycline"],
-    "note": "Apply copper sprays from pink bud stage; avoid during bloom."
+    "recommended_products": [
+      "Copper-based bactericide",
+      "Other bactericide only where registered for this crop and prescribed by an agricultural officer"
+    ],
+    "note": "Apply copper only at the stages your officer or the product label advises, because it can harm leaves and fruit at the wrong time."
+  },
+  "Peach___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Well-rotted farmyard manure",
+      "Orchard hygiene, such as removing fallen leaves and fruit"
+    ],
+    "note": "Avoid too much nitrogen, which causes soft growth that diseases favour."
   },
   "Pepper,_bell___Bacterial_spot": {
-    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Mancozeb WP"],
-    "note": "Use disease-free seed and apply copper sprays during wet weather."
+    "recommended_products": [
+      "Copper-based bactericide",
+      "Bio-control agent (Bacillus subtilis formulation)",
+      "Other bactericide only where registered for this crop and prescribed by an agricultural officer"
+    ],
+    "note": "Use disease-free seed or seedlings, avoid overhead watering, and avoid working in wet fields."
+  },
+  "Pepper,_bell___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Neem cake as a soil amendment",
+      "Bio-fertilisers (e.g., Azospirillum)"
+    ],
+    "note": "Use drip irrigation and check the undersides of leaves from time to time."
   },
   "Potato___Early_blight": {
-    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Azoxystrobin"],
-    "note": "Start applications before disease onset; repeat every 7-10 days."
+    "recommended_products": [
+      "Protective contact fungicide (e.g., mancozeb or chlorothalonil)",
+      "Systemic triazole fungicide (e.g., difenoconazole)",
+      "Bio-fungicide (Trichoderma harzianum)"
+    ],
+    "note": "Start protection when lower leaves show ringed spots, and keep plant nutrition balanced."
   },
   "Potato___Late_blight": {
-    "recommended_products": ["Metalaxyl + Mancozeb", "Cymoxanil + Mancozeb", "Copper fungicide"],
-    "note": "Act fast — late blight spreads rapidly. Contact your agriculture officer immediately."
+    "recommended_products": [
+      "Contact protectant for prevention (e.g., mancozeb)",
+      "Systemic and contact combination (e.g., metalaxyl with mancozeb, or cymoxanil with mancozeb)",
+      "Oomycete-specific fungicide (e.g., dimethomorph)"
+    ],
+    "note": "Late blight spreads very fast in cool, wet, foggy weather. Contact your agricultural officer immediately and destroy infected plants and discarded tubers."
+  },
+  "Potato___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Certified disease-free seed tubers",
+      "Earthing up soil around the plants"
+    ],
+    "note": "Keep scouting, especially in cool, humid weather."
+  },
+  "Raspberry___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Compost and cane support or trellising",
+      "Watering at the base of the plant"
+    ],
+    "note": "Prune out old fruited canes after harvest."
+  },
+  "Soybean___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Rhizobium seed inoculation for the next crop",
+      "Phosphate-solubilising bacteria"
+    ],
+    "note": "Keep the crop weed-free and keep scouting."
   },
   "Squash___Powdery_mildew": {
-    "recommended_products": ["Sulphur dust/WP", "Potassium bicarbonate", "Myclobutanil"],
-    "note": "Apply at first sign of white powder on leaves."
+    "recommended_products": [
+      "Wettable sulphur formulation",
+      "Potassium bicarbonate spray",
+      "Neem-based formulation",
+      "Systemic triazole fungicide (only on agricultural officer's advice)"
+    ],
+    "note": "Spray in the early morning or evening and cover the undersides of the leaves."
   },
   "Strawberry___Leaf_scorch": {
-    "recommended_products": ["Captan WP", "Thiram", "Copper fungicide"],
-    "note": "Remove infected leaves before applying fungicide."
+    "recommended_products": [
+      "Protective contact fungicide (e.g., captan)",
+      "Copper-based spray",
+      "Bio-agent (Trichoderma viride)"
+    ],
+    "note": "Remove and destroy badly spotted leaves, grow on raised beds with clean mulch, and give plants room."
+  },
+  "Strawberry___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Clean straw mulch to keep fruit off the soil",
+      "Drip irrigation"
+    ],
+    "note": "Check crowns and runners regularly for spots."
   },
   "Tomato___Bacterial_spot": {
-    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Streptomycin sulfate"],
-    "note": "Apply copper sprays at first sign; avoid during hot humid weather."
+    "recommended_products": [
+      "Copper-based bactericide",
+      "Bio-control agent (Bacillus subtilis or Pseudomonas fluorescens)",
+      "Other bactericide only where registered for this crop and prescribed by an agricultural officer"
+    ],
+    "note": "Use disease-free seed and healthy seedlings, and avoid working among wet plants."
   },
   "Tomato___Early_blight": {
-    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Azoxystrobin"],
-    "note": "Remove infected lower leaves and apply fungicide from early season."
+    "recommended_products": [
+      "Contact protectant (e.g., mancozeb or chlorothalonil)",
+      "Systemic fungicide (e.g., difenoconazole or azoxystrobin)",
+      "Bio-fungicide (Trichoderma viride)"
+    ],
+    "note": "Remove lower leaves that touch the soil, and mulch to stop rain splashing spores upward."
   },
   "Tomato___Late_blight": {
-    "recommended_products": ["Metalaxyl + Mancozeb", "Cymoxanil + Mancozeb", "Dimethomorph"],
-    "note": "Act immediately — late blight spreads fast. Consult your agriculture officer."
+    "recommended_products": [
+      "Preventive multi-site fungicide (e.g., mancozeb or chlorothalonil)",
+      "Systemic and contact combination (e.g., metalaxyl-M with mancozeb, or cymoxanil with mancozeb)",
+      "Oomycete-specific fungicide (e.g., dimethomorph)"
+    ],
+    "note": "Late blight can ruin a crop within days in cool, wet weather. Isolate infected plants and contact your agricultural officer immediately."
   },
   "Tomato___Leaf_Mold": {
-    "recommended_products": ["Chlorothalonil", "Mancozeb WP", "Copper fungicide"],
-    "note": "Improve ventilation first, then apply fungicide if needed."
+    "recommended_products": [
+      "Broad-spectrum protectant (e.g., chlorothalonil or mancozeb)",
+      "Copper-based fungicide",
+      "Bio-control spray (Trichoderma harzianum)"
+    ],
+    "note": "Mostly a problem in polyhouses and greenhouses: reduce humidity and improve ventilation."
   },
   "Tomato___Septoria_leaf_spot": {
-    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Copper fungicide"],
-    "note": "Remove infected lower leaves; apply fungicide preventively in wet seasons."
+    "recommended_products": [
+      "Protective fungicide (e.g., mancozeb or chlorothalonil)",
+      "Copper-based spray",
+      "Bio-agent (Pseudomonas fluorescens)"
+    ],
+    "note": "Remove infected lower leaves quickly, avoid overhead watering, and rotate with non-tomato-family crops."
   },
   "Tomato___Spider_mites Two-spotted_spider_mite": {
-    "recommended_products": ["Abamectin", "Bifenazate", "Neem oil (organic option)"],
-    "note": "Rotate miticide classes to prevent resistance. Consult your agriculture officer."
+    "recommended_products": [
+      "Neem-based formulation",
+      "Acaricide (miticide) registered for this crop, only on agricultural officer's advice",
+      "Bio-acaricide (Beauveria bassiana)"
+    ],
+    "note": "Mites thrive in hot, dry, dusty conditions. Spray the undersides of leaves well, keep plants watered, and rotate between chemical groups if sprays are needed."
   },
   "Tomato___Target_Spot": {
-    "recommended_products": ["Azoxystrobin", "Pyraclostrobin", "Chlorothalonil"],
-    "note": "Apply at first sign of symptoms; repeat every 10-14 days."
+    "recommended_products": [
+      "Strobilurin-group fungicide (e.g., azoxystrobin)",
+      "Broad-spectrum protectant (e.g., chlorothalonil)",
+      "Bio-control agent (Trichoderma viride)"
+    ],
+    "note": "Give plants room and stake them for airflow, and clean supports between seasons."
   },
   "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
-    "recommended_products": ["Imidacloprid (for whitefly control)", "Thiamethoxam", "Reflective mulch"],
-    "note": "No cure for the virus — control whitefly vectors. Remove infected plants."
+    "recommended_products": [
+      "No curative chemical is available for virus infections",
+      "Yellow sticky traps to monitor and reduce whiteflies",
+      "Neem-based formulation as a whitefly deterrent",
+      "Systemic insecticide only on agricultural officer's advice"
+    ],
+    "note": "Remove and destroy infected plants early, and use insect-proof nets in nurseries."
   },
   "Tomato___Tomato_mosaic_virus": {
-    "recommended_products": ["No chemical cure — prevention only", "Disinfectant (for tools): 10% bleach solution"],
-    "note": "Wash hands and tools; remove infected plants immediately."
+    "recommended_products": [
+      "No chemical cure is available for plant viruses",
+      "Disinfect hands and tools between plants (method as advised by your agricultural officer)",
+      "Certified virus-tested seed"
+    ],
+    "note": "The virus spreads by touch and tools. Do not handle tobacco before touching plants, and remove infected plants."
+  },
+  "Tomato___healthy": {
+    "recommended_products": [
+      "No chemical treatment required",
+      "Balanced, soil-test-based fertilisation",
+      "Beneficial soil microbes (e.g., Trichoderma, Pseudomonas) for soil health"
+    ],
+    "note": "Keep staking, pruning suckers, and watering at the base of the plant."
   }
 }

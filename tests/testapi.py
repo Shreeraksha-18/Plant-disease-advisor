@@ -138,3 +138,49 @@ def test_users_cannot_see_each_others_records(client):
     assert all(row["id"] != rid for row in client.get("/predictions", headers=headers_b).json())
     # and the owner still has it
     assert client.get(f"/predictions/{rid}", headers=headers_a).status_code == 200
+
+
+def test_support_endpoint(client):
+    _, headers = make_user(client)
+    res = upload(client, headers).json()
+    rid = res["record_id"]
+
+    r = client.get(f"/predictions/{rid}/support", headers=headers)
+    assert r.status_code == 200
+    data = r.json()
+    assert "disease" in data
+    assert "disease_readable" in data
+    assert "recommended_products" in data
+    assert isinstance(data["recommended_products"], list)
+    assert len(data["recommended_products"]) > 0
+    assert "where_to_buy" in data
+    assert len(data["where_to_buy"]) > 0
+    assert "disclaimer" in data
+    assert "officer" in data["disclaimer"].lower()
+
+
+def test_chat_endpoints(client):
+    _, headers = make_user(client)
+    res = upload(client, headers).json()
+    rid = res["record_id"]
+
+    # Send a question
+    r = client.post(
+        f"/predictions/{rid}/chat",
+        headers=headers,
+        json={"message": "What preventive care is needed?"},
+    )
+    if res.get("status") == "ok":
+        assert r.status_code == 200
+        assert "reply" in r.json()
+        assert r.json()["record_id"] == rid
+
+        r_hist = client.get(f"/predictions/{rid}/chat", headers=headers)
+        assert r_hist.status_code == 200
+        messages = r_hist.json()
+        assert len(messages) == 2
+        assert messages[0]["role"] == "user"
+        assert messages[0]["content"] == "What preventive care is needed?"
+        assert messages[1]["role"] == "assistant"
+    else:
+        assert r.status_code == 400

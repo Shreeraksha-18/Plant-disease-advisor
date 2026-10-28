@@ -180,6 +180,9 @@ def gen():
         ["GET", "/predictions/{id}", "Yes", "Get a specific diagnosis"],
         ["PUT", "/predictions/{id}", "Yes", "Add a note or correct the label"],
         ["DELETE", "/predictions/{id}", "Yes", "Delete a diagnosis"],
+        ["POST", "/predictions/{id}/chat", "Yes", "Ask follow-up questions to AI about this diagnosis"],
+        ["GET", "/predictions/{id}/chat", "Yes", "Get full conversation history for this diagnosis"],
+        ["GET", "/predictions/{id}/support", "Yes", "ICAR-aligned chemical/bio active categories & certified stores"],
     ])
     p("Full interactive docs are auto-generated at /docs (Swagger UI).")
 
@@ -195,7 +198,7 @@ def gen():
 
     # ── Testing ──
     heading("Testing")
-    p("We wrote 11 automated tests that run against a temporary database with the LLM disabled:")
+    p("We wrote 13 automated tests that run against a temporary database with the LLM disabled:")
     table(["Test", "What It Checks"], [
         ["test_health", "/health returns 200 OK"],
         ["test_classes_lists_38", "/classes returns exactly 38 items"],
@@ -207,32 +210,34 @@ def gen():
         ["test_predict_rejects_bad_file", "Non-image file → 400"],
         ["test_predict_and_crud_flow", "Full cycle: predict → view → update note → delete"],
         ["test_user_isolation", "User A can't see User B's records"],
+        ["test_support_endpoint", "Where-to-buy returns ICAR chemical classes, certified stores, and disclaimer"],
+        ["test_chat_endpoints", "Multi-turn chat flow persists user queries and AI assistant replies"],
         ["test_pagination", "skip/limit query params work correctly"],
     ])
-    p("All 11 passed. ✅", bold=True)
+    p("All 13 passed. ✅", bold=True)
 
     # ── The Frontend ──
     heading("The Web Client")
-    p("We built a clean single-page app in plain HTML/CSS/JS (no React, no build tools, no npm). It has:")
-    p("• Login / Register screen with tabs")
-    p("• Drag-and-drop image upload with preview")
-    p("• Confidence bar with color coding (green/yellow/orange)")
-    p("• \"Uncertain\" warning when confidence is low")
-    p("• Structured explanation display (Summary, Symptoms, Causes, Prevention)")
-    p("• Source badge showing whether the explanation came from Gemini or the knowledge base")
-    p("• Sidebar with diagnosis history")
-    p("• Settings gear to change the API URL (useful for switching between local and AWS)")
-    p("• 482 lines total, zero dependencies")
+    p("We built a modern, conversational single-page app in plain HTML/CSS/JS (no React, no build tools, no npm). It has:")
+    p("• Fresh emerald-to-teal gradient aesthetic across cards, buttons, and backgrounds")
+    p("• Login / Register screen with tabs and session persistence")
+    p("• Drag-and-drop leaf photo upload with immediate preview")
+    p("• Conversational diagnosis feed with leaf preview and AI diagnosis bubbles")
+    p("• Interactive AI chat input for asking follow-up questions directly about the diagnosis")
+    p("• 'Where to Buy' support button displaying ICAR-aligned chemical and biological options with zero dosages")
+    p("• Verified agricultural input sources (BigHaat, AgroStar, IFFCO eBazar, Krishi Vigyan Kendra)")
+    p("• Sidebar with diagnosis history and quick deletion")
+    p("• Zero external JS framework dependencies")
 
     # ── The Explanation Engine ──
-    heading("The Explanation Engine — LLM + Fallback")
-    p("This is probably the most interesting engineering decision in the project.", italic=True, before=6)
-    p("When the model predicts a disease, we want to explain it in simple terms. We use Google's Gemini API for this — send it the disease name, ask for JSON with summary/symptoms/causes/prevention.")
-    p("But here's the thing: external APIs fail. They rate-limit you, they go down, they change their pricing. Our first LLM provider actually blocked our project entirely (HTTP 403). So we built a two-layer system:")
-    p("1. Try Gemini first → if it works, tag the response as source: \"llm\"")
-    p("2. If Gemini fails for ANY reason (timeout, rate limit, error, turned off), automatically return the answer from a hand-written knowledge base of 38 diseases → tag as source: \"knowledge_base\"")
-    p("3. The user always gets an answer. The frontend shows which source was used.")
-    p("You can also completely disable the LLM by setting USE_LLM=false in the .env file. The knowledge base handles everything.")
+    heading("The Explanation & Support Engine — Safe AI for Agriculture")
+    p("Agricultural advisory requires high ethical standards: incorrect chemical advice can destroy crops.", italic=True, before=6)
+    p("We designed a multi-layer safe advisory architecture:")
+    p("1. Primary Diagnosis Explanation: The model predicts the disease; the LLM provides symptoms, causes, and cultural prevention tips. The system prompt strictly prohibits prescribing specific pesticide trade names or dosages.")
+    p("2. Curated ICAR/SAU Support Directory: A dedicated knowledge base (support_info.json) maps all 38 classes to broad active ingredient categories (e.g., copper-based contact fungicides, bio-control Trichoderma formulations) referenced from ICAR and State Agricultural University guidelines, strictly omitting dosages.")
+    p("3. Multi-turn Follow-up Chat: Users can ask contextual questions. The assistant is instructed to provide agronomic clarity while deferring chemical prescription to licensed officers.")
+    p("4. Mandatory Officer Sign-off Disclaimer: Every advisory card prominently warns farmers to verify formulation, crop stage suitability, and safety with their local agriculture officer before purchasing.")
+    p("5. Offline Fallback: If external LLM APIs fail, time out (12s), or are turned off (USE_LLM=false), the system seamlessly returns the curated built-in knowledge base.")
 
     # ── Did We Meet Our Goals? ──
     heading("Did We Meet Our Goals?")
@@ -240,7 +245,7 @@ def gen():
         ["Classification accuracy", "≥ 90%", "94.71% (CI: 94.28–95.13%)", "✅ Met"],
         ["Inference speed", "< 100 ms", "Mean 20.5 ms, p95 28.0 ms", "✅ Met (5x faster)"],
         ["Accuracy on confident predictions", "≥ 95%", "97.6%", "✅ Met"],
-        ["All tests pass", "11/11", "11/11", "✅ Met"],
+        ["All tests pass", "13/13", "13/13", "✅ Met"],
         ["Deployed on AWS with monitoring", "Yes", "EC2 + S3 + CloudFront + CloudWatch", "✅ Met"],
     ])
 

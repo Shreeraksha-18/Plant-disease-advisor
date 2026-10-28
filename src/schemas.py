@@ -92,4 +92,4 @@ class SupportResponse(BaseModel):
     disease_readable: str
     recommended_products: List[str]
     where_to_buy: List[SupportStore]
-    helpline: str
+    disclaimer: str

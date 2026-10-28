@@ -43,7 +43,10 @@ with open(Path(__file__).parent / "support_info.json", encoding="utf-8") as _f:
     _SUPPORT_INFO = json.load(_f)
 
 _DEFAULT_STORES = [SupportStore(**s) for s in _SUPPORT_INFO["_default_stores"]]
-_DEFAULT_HELPLINE = _SUPPORT_INFO["_default_helpline"]
+_DEFAULT_DISCLAIMER = _SUPPORT_INFO.get(
+    "_disclaimer",
+    "Chemical suggestions are general active ingredient groups from university advisories. Strictly no doses are given. Always consult a local agricultural officer.",
+)
 
 app = FastAPI(title="Plant Disease Advisor API", version="1.3.0")
 
@@ -321,5 +324,5 @@ def get_support(
         disease_readable=readable,
         recommended_products=recommended_products,
         where_to_buy=_DEFAULT_STORES,
-        helpline=_DEFAULT_HELPLINE,
+        disclaimer=_DEFAULT_DISCLAIMER,
     )

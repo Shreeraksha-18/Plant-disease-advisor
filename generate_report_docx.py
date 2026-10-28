@@ -478,18 +478,27 @@ def generate_rvu_report():
     p("If the highest softmax probability is below 0.70, the API returns status \u2018uncertain\u2019 "
       "and does not generate an explanation, prompting the user for a clearer leaf photo.")
 
-    subsection_heading("3.1.5 Explanation Module")
-    p("The predicted class name is sent to an LLM with a prompt asking for JSON (summary, symptoms, "
-      "causes, prevention), general guidance only, and no pesticide names or doses. The reply is validated. On any failure, "
-      "including a 12-second timeout, the system returns the entry from a curated knowledge base of 38 entries. Each response states its source.")
+    subsection_heading("3.1.5 Explanation and Advisory Sourcing Module")
+    p("The advisory layer employs a two-tier safety architecture designed to prevent harmful agricultural misapplication: "
+      "(1) Core Diagnosis & AI Explanation: The predicted disease class is passed to an LLM with a system prompt demanding JSON "
+      "(summary, symptoms, causes, prevention), general guidance only, and strictly prohibiting specific pesticide trade names or dosages. "
+      "Responses are validated, with a 12-second timeout automatically falling back to a curated 38-class offline knowledge base. "
+      "(2) Curated ICAR-Aligned Sourcing Directory (/support): Provides verified broad active-ingredient categories "
+      "(e.g., copper-based protectants, Mancozeb, bio-control Trichoderma formulations) referenced from Indian Council of "
+      "Agricultural Research (ICAR) and State Agricultural University guidelines, alongside certified retail and government outlets "
+      "(BigHaat, AgroStar, IFFCO eBazar, Krishi Vigyan Kendra). Dosages are strictly excluded, and all outputs mandate local agricultural officer consultation. "
+      "(3) Multi-Turn Conversational Follow-Up (/chat): Persists interactive follow-up Q&A per diagnosis while enforcing "
+      "safe advisory guardrails.")
 
     subsection_heading("3.1.6 API Design")
-    p("Clean RESTful endpoints (/health, /classes, /auth/register, /auth/login, /auth/me, /predict, /predictions) "
-      "with standard HTTP status codes (200, 201, 204, 400, 401, 404, 409, 413, 422, 502) and interactive OpenAPI documentation at /docs.")
+    p("Clean RESTful endpoints (/health, /classes, /auth/register, /auth/login, /auth/me, /predict, /predictions, "
+      "/predictions/{id}/chat, /predictions/{id}/support) with standard HTTP status codes (200, 201, 204, 400, 401, 404, 409, 413, 422, 502) "
+      "and interactive OpenAPI documentation at /docs.")
 
     subsection_heading("3.1.7 Database Design")
-    p("Table users (id, username unique, password hash, created time) and table predictions (id, user id as "
-      "foreign key, disease, confidence, status, explanation JSON, note, S3 image key, created time), a one-to-many relationship with cascade delete.")
+    p("Table users (id, username unique, password hash, created time), table predictions (id, user id as "
+      "foreign key, disease, confidence, status, explanation JSON, note, S3 image key, created time), and table chat_messages "
+      "(id, record id as foreign key, role, content, created time), forming one-to-many relationships with cascade delete.")
 
     subsection_heading("3.1.8 Security Design")
     p("bcrypt password hashing, JWT bearer tokens (60-minute expiry), ownership checks on every record "
@@ -514,8 +523,8 @@ def generate_rvu_report():
       "and the web client, Swagger, and curl are consumers that read that description and invoke the API.")
 
     subsection_heading("3.1.11 Testing")
-    p("11 automated pytest tests run against a temporary database with the LLM disabled, validating authentication, "
-      "input sanitation, tenant isolation, and CRUD operations.")
+    p("13 automated pytest tests run against a temporary database with the LLM disabled, validating authentication, "
+      "input sanitation, tenant isolation, CRUD operations, where-to-buy support data, and multi-turn chat persistence.")
 
     section_heading("3.2 Datasets")
     p("PlantVillage (Hughes and Salath\u00e9, 2015): 54,305 colour images, 38 classes covering 14 crops, split 80/20 with a fixed "
@@ -584,8 +593,10 @@ def generate_rvu_report():
         ["test_predict_requires_login", "Unauthenticated upload block", "Passed"],
         ["test_predict_crud_flow", "End-to-end diagnosis and CRUD", "Passed"],
         ["test_user_isolation", "Cross-tenant record isolation", "Passed"],
+        ["test_support_endpoint", "ICAR active ingredients, certified stores & disclaimer", "Passed"],
+        ["test_chat_endpoints", "Multi-turn diagnosis follow-up chat flow", "Passed"],
     ])
-    p("Result: 11 of 11 tests passed.", bold=True, space_before=6)
+    p("Result: 13 of 13 tests passed.", bold=True, space_before=6)
 
     section_heading("4.3 Analysis of Results")
     p("The model separates most classes very well, with 14-crop coverage. Errors concentrate in the tomato block: Early blight "
@@ -644,7 +655,7 @@ def generate_rvu_report():
          "n = 10,861 CPU executions; satisfies target by 3.5\u00d7 margin."],
         ["3. Reliability", "\u2265 95%", "97.6% on 92.9% images",
          "Approximate 95% CI 97.3 to 97.9 (n \u2248 10,090 answered)."],
-        ["4. Secure CRUD", "All tests pass", "11 of 11 passed",
+        ["4. Secure CRUD & Chat", "All tests pass", "13 of 13 passed",
          "Automated pytest verification suite."],
         ["5. Cloud Deploy", "Deployed & monitored", "Live on AWS",
          "Deployed on EC2, S3, CloudFront, IAM, CloudWatch."],
@@ -705,7 +716,7 @@ def generate_rvu_report():
     p("APPENDIX", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size=16, space_before=18, space_after=18)
     p("A. Key source code listings (app.py, auth.py, predict.py, explain.py, database.py, models.py).")
     p("B. Full API reference with sample requests, response schemas, and OpenAPI endpoints.")
-    p("C. Screenshots index: Swagger /docs, CRUD in action, \u2018uncertain\u2019 threshold alert, SQLite tables, 401/404 security checks, Pytest 11/11 output, S3 buckets, CloudFront behaviors, IAM role, EC2 instance, CloudWatch metrics.")
+    p("C. Screenshots index: Swagger /docs, CRUD in action, \u2018uncertain\u2019 threshold alert, SQLite tables, 401/404 security checks, Pytest 13/13 output, S3 buckets, CloudFront behaviors, IAM role, EC2 instance, CloudWatch metrics.")
     p("D. Environment variables table (.env) and deployment configuration.")
     p("E. Full per-class precision/recall/F1 table and confusion matrix analysis.")
 

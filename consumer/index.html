@@ -682,11 +682,10 @@
         const supportHtml = `<div class="bubble bot support">
           <div class="crop" style="margin-bottom:8px">🛒 Where to Buy</div>
           <b style="font-size:16px">Prevention products for ${esc(data.disease_readable)}</b>
-          ${productsHtml ? `<p style="font-size:13px;color:var(--muted);margin:8px 0 4px">Commonly recommended products:</p>${productsHtml}` : ""}
-          <p style="font-size:13px;color:var(--muted);margin:14px 0 6px">Available from:</p>
+          ${productsHtml ? `<p style="font-size:13px;color:var(--muted);margin:8px 0 4px">Active ingredients & bio-control options (ICAR / SAU advisory):</p>${productsHtml}` : ""}
+          <p style="font-size:13px;color:var(--muted);margin:14px 0 6px">Where to buy certified inputs:</p>
           <div class="store-list">${storesHtml}</div>
-          <div class="helpline">📞 ${esc(data.helpline)}</div>
-          <p style="font-size:12px;color:var(--muted);margin-top:10px">⚠️ Always consult a local agriculture officer before buying or applying any product.</p>
+          <p style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">⚠️ <b>Important:</b> ${esc(data.disclaimer || "Always consult a local agriculture officer before buying or applying any product. Wrong chemical advice or incorrect application can severely harm crops.")}</p>
         </div>`;
 
         const typingEl = document.getElementById(typingId);
