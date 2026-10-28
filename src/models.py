@@ -36,3 +36,19 @@ class PredictionRecord(Base):
     created_at = Column(DateTime, default=utcnow)
 
     owner = relationship("User", back_populates="predictions")
+    chat_messages = relationship(
+        "ChatMessage", back_populates="prediction", cascade="all, delete-orphan",
+        order_by="ChatMessage.id"
+    )
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    record_id = Column(Integer, ForeignKey("predictions.id"), nullable=False, index=True)
+    role = Column(String(10), nullable=False)   # "user" or "assistant"
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=utcnow)
+
+    prediction = relationship("PredictionRecord", back_populates="chat_messages")

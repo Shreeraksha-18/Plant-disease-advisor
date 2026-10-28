@@ -98,3 +98,43 @@ def explain_disease(disease_name: str) -> dict:
 
     info = DISEASE_INFO.get(disease_name, GENERIC)
     return {**info, "source": "knowledge_base"}
+
+
+def chat_about_disease(disease: str, explanation: dict, history: list, user_message: str) -> str:
+    """Multi-turn chat about a diagnosed disease using Groq (or fallback message)."""
+    readable = disease.replace("___", " - ").replace("_", " ")
+    prevention_tips = ", ".join(explanation.get("prevention", []))
+    system_prompt = (
+        f"You are a friendly and knowledgeable plant health assistant helping a farmer. "
+        f"The farmer's plant was diagnosed with: {readable}.\n"
+        f"Summary: {explanation.get('summary', '')}\n"
+        f"Prevention tips: {prevention_tips}\n"
+        "Answer the farmer's questions clearly, concisely and in a friendly way. "
+        "For specific pesticide names or doses, always recommend consulting a local agriculture officer. "
+        "Keep answers short and practical."
+    )
+
+    messages = [{"role": "system", "content": system_prompt}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": user_message})
+
+    if not USE_LLM:
+        return "I'm unable to answer follow-up questions right now. Please consult a local agriculture officer for more advice."
+
+    try:
+        r = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": "Bearer " + os.environ["GROQ_API_KEY"]},
+            json={
+                "model": GROQ_MODEL,
+                "messages": messages,
+                "temperature": 0.5,
+                "max_tokens": 400,
+            },
+            timeout=TIMEOUT,
+        )
+        r.raise_for_status()
+        return r.json()["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"[chat] LLM unavailable: {type(e).__name__}")
+        return "I'm having trouble connecting to the AI right now. Please consult a local agriculture officer for advice."

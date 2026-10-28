@@ -1,0 +1,139 @@
+{
+  "_default_stores": [
+    {
+      "type": "Online",
+      "name": "BigHaat",
+      "url": "https://www.bighaat.com",
+      "note": "Pan-India delivery, COD available, agro-expert chat support"
+    },
+    {
+      "type": "Online",
+      "name": "AgroStar",
+      "url": "https://www.agrostar.in",
+      "note": "App-based, farmer community support, quick delivery"
+    },
+    {
+      "type": "Online",
+      "name": "Krishidukan",
+      "url": "https://www.krishidukan.com",
+      "note": "Wide range of fungicides, pesticides, and bio-inputs"
+    },
+    {
+      "type": "Government",
+      "name": "State Agriculture Department (Krishi Kendra)",
+      "url": "https://agricoop.nic.in",
+      "note": "Subsidised products available at local Krishi Kendras; ask your block agriculture officer"
+    },
+    {
+      "type": "Local",
+      "name": "Nearest Agro-input dealer",
+      "url": null,
+      "note": "Ask your local agriculture officer for the nearest certified agro-input dealer"
+    }
+  ],
+  "_default_helpline": "Kisan Call Centre: 1800-180-1551 (Toll Free, 24x7)",
+  "Apple___Apple_scab": {
+    "recommended_products": ["Copper-based fungicide", "Captan WP", "Mancozeb WP"],
+    "note": "Apply at bud burst and after rain events in spring."
+  },
+  "Apple___Black_rot": {
+    "recommended_products": ["Captan WP", "Thiophanate-methyl", "Copper fungicide"],
+    "note": "Prune infected wood before applying any fungicide."
+  },
+  "Apple___Cedar_apple_rust": {
+    "recommended_products": ["Myclobutanil", "Propiconazole", "Copper fungicide"],
+    "note": "Apply at pink bud stage and repeat after rain."
+  },
+  "Cherry_(including_sour)___Powdery_mildew": {
+    "recommended_products": ["Sulphur dust/WP", "Potassium bicarbonate", "Myclobutanil"],
+    "note": "Start applications when first symptoms appear."
+  },
+  "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+    "recommended_products": ["Azoxystrobin", "Propiconazole", "Mancozeb WP"],
+    "note": "Apply at first sign of lesions, especially in humid conditions."
+  },
+  "Corn_(maize)___Common_rust_": {
+    "recommended_products": ["Propiconazole", "Azoxystrobin", "Mancozeb WP"],
+    "note": "Scout regularly; apply fungicide if more than 50% of plants are affected."
+  },
+  "Corn_(maize)___Northern_Leaf_Blight": {
+    "recommended_products": ["Azoxystrobin", "Propiconazole", "Pyraclostrobin"],
+    "note": "Apply at VT/R1 growth stage for best protection."
+  },
+  "Grape___Black_rot": {
+    "recommended_products": ["Captan WP", "Myclobutanil", "Mancozeb WP"],
+    "note": "Apply from bud swell through fruit set."
+  },
+  "Grape___Esca_(Black_Measles)": {
+    "recommended_products": ["No chemical cure available — focus on wound protection"],
+    "note": "Use wound sealants after pruning. Consult your agriculture officer."
+  },
+  "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+    "recommended_products": ["Copper oxychloride", "Mancozeb WP", "Carbendazim"],
+    "note": "Apply during humid periods and after rain."
+  },
+  "Orange___Haunglongbing_(Citrus_greening)": {
+    "recommended_products": ["Imidacloprid (for psyllid control)", "Thiamethoxam"],
+    "note": "No cure exists for HLB. Focus on psyllid control and removing infected trees."
+  },
+  "Peach___Bacterial_spot": {
+    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Oxytetracycline"],
+    "note": "Apply copper sprays from pink bud stage; avoid during bloom."
+  },
+  "Pepper,_bell___Bacterial_spot": {
+    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Mancozeb WP"],
+    "note": "Use disease-free seed and apply copper sprays during wet weather."
+  },
+  "Potato___Early_blight": {
+    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Azoxystrobin"],
+    "note": "Start applications before disease onset; repeat every 7-10 days."
+  },
+  "Potato___Late_blight": {
+    "recommended_products": ["Metalaxyl + Mancozeb", "Cymoxanil + Mancozeb", "Copper fungicide"],
+    "note": "Act fast — late blight spreads rapidly. Contact your agriculture officer immediately."
+  },
+  "Squash___Powdery_mildew": {
+    "recommended_products": ["Sulphur dust/WP", "Potassium bicarbonate", "Myclobutanil"],
+    "note": "Apply at first sign of white powder on leaves."
+  },
+  "Strawberry___Leaf_scorch": {
+    "recommended_products": ["Captan WP", "Thiram", "Copper fungicide"],
+    "note": "Remove infected leaves before applying fungicide."
+  },
+  "Tomato___Bacterial_spot": {
+    "recommended_products": ["Copper hydroxide", "Copper oxychloride", "Streptomycin sulfate"],
+    "note": "Apply copper sprays at first sign; avoid during hot humid weather."
+  },
+  "Tomato___Early_blight": {
+    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Azoxystrobin"],
+    "note": "Remove infected lower leaves and apply fungicide from early season."
+  },
+  "Tomato___Late_blight": {
+    "recommended_products": ["Metalaxyl + Mancozeb", "Cymoxanil + Mancozeb", "Dimethomorph"],
+    "note": "Act immediately — late blight spreads fast. Consult your agriculture officer."
+  },
+  "Tomato___Leaf_Mold": {
+    "recommended_products": ["Chlorothalonil", "Mancozeb WP", "Copper fungicide"],
+    "note": "Improve ventilation first, then apply fungicide if needed."
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "recommended_products": ["Mancozeb WP", "Chlorothalonil", "Copper fungicide"],
+    "note": "Remove infected lower leaves; apply fungicide preventively in wet seasons."
+  },
+  "Tomato___Spider_mites Two-spotted_spider_mite": {
+    "recommended_products": ["Abamectin", "Bifenazate", "Neem oil (organic option)"],
+    "note": "Rotate miticide classes to prevent resistance. Consult your agriculture officer."
+  },
+  "Tomato___Target_Spot": {
+    "recommended_products": ["Azoxystrobin", "Pyraclostrobin", "Chlorothalonil"],
+    "note": "Apply at first sign of symptoms; repeat every 10-14 days."
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "recommended_products": ["Imidacloprid (for whitefly control)", "Thiamethoxam", "Reflective mulch"],
+    "note": "No cure for the virus — control whitefly vectors. Remove infected plants."
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "recommended_products": ["No chemical cure — prevention only", "Disinfectant (for tools): 10% bleach solution"],
+    "note": "Wash hands and tools; remove infected plants immediately."
+  }
+}

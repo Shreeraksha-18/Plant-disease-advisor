@@ -3,6 +3,7 @@ import json
 import logging
 import uuid
 from typing import List, Optional
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,15 +13,20 @@ from sqlalchemy.orm import Session
 
 from src.auth import create_access_token, get_current_user, hash_password, verify_password
 from src.database import Base, engine, get_db
-from src.explain import explain_disease
-from src.models import PredictionRecord, User
+from src.explain import explain_disease, chat_about_disease
+from src.models import PredictionRecord, User, ChatMessage
 from src.predict import CLASS_NAMES, predict
 from src.schemas import (
+    ChatMessageOut,
+    ChatRequest,
+    ChatResponse,
     Explanation,
     PredictionOut,
     PredictionUpdate,
     PredictResponse,
     Prediction,
+    SupportResponse,
+    SupportStore,
     Token,
     UserCreate,
     UserOut,
@@ -32,7 +38,14 @@ CONFIDENCE_THRESHOLD = 0.70
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Plant Disease Advisor API", version="1.2.0")
+# Load support info
+with open(Path(__file__).parent / "support_info.json", encoding="utf-8") as _f:
+    _SUPPORT_INFO = json.load(_f)
+
+_DEFAULT_STORES = [SupportStore(**s) for s in _SUPPORT_INFO["_default_stores"]]
+_DEFAULT_HELPLINE = _SUPPORT_INFO["_default_helpline"]
+
+app = FastAPI(title="Plant Disease Advisor API", version="1.3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -232,3 +245,81 @@ def delete_prediction(
     db.delete(record)
     db.commit()
     return Response(status_code=204)
+
+
+# ---------- chat ----------
+
+@app.post("/predictions/{record_id}/chat", response_model=ChatResponse, tags=["chat"])
+def send_chat_message(
+    record_id: int,
+    payload: ChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    record = get_owned_record(db, record_id, current_user)
+
+    if record.status == "uncertain" or not record.explanation_json:
+        raise HTTPException(
+            status_code=400,
+            detail="Chat is only available for confident diagnoses with an explanation."
+        )
+
+    explanation = json.loads(record.explanation_json)
+
+    # Build history from existing messages
+    existing = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.record_id == record_id)
+        .order_by(ChatMessage.id)
+        .all()
+    )
+    history = [{"role": m.role, "content": m.content} for m in existing]
+
+    # Get AI reply
+    reply = chat_about_disease(record.disease, explanation, history, payload.message)
+
+    # Save user message and assistant reply
+    db.add(ChatMessage(record_id=record_id, role="user", content=payload.message))
+    db.add(ChatMessage(record_id=record_id, role="assistant", content=reply))
+    db.commit()
+
+    return ChatResponse(reply=reply, record_id=record_id)
+
+
+@app.get("/predictions/{record_id}/chat", response_model=List[ChatMessageOut], tags=["chat"])
+def get_chat_history(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    record = get_owned_record(db, record_id, current_user)
+    messages = (
+        db.query(ChatMessage)
+        .filter(ChatMessage.record_id == record_id)
+        .order_by(ChatMessage.id)
+        .all()
+    )
+    return messages
+
+
+# ---------- support / where to buy ----------
+
+@app.get("/predictions/{record_id}/support", response_model=SupportResponse, tags=["support"])
+def get_support(
+    record_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    record = get_owned_record(db, record_id, current_user)
+
+    disease_info = _SUPPORT_INFO.get(record.disease, {})
+    recommended_products = disease_info.get("recommended_products", ["Consult a local agriculture officer"])
+    readable = record.disease.replace("___", " - ").replace("_", " ")
+
+    return SupportResponse(
+        disease=record.disease,
+        disease_readable=readable,
+        recommended_products=recommended_products,
+        where_to_buy=_DEFAULT_STORES,
+        helpline=_DEFAULT_HELPLINE,
+    )

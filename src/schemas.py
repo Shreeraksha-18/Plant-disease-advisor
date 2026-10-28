@@ -56,3 +56,40 @@ class PredictionOut(BaseModel):
 class PredictionUpdate(BaseModel):
     note: Optional[str] = Field(default=None, max_length=500)
     disease: Optional[str] = None        # corrected label, must be a known class
+
+
+# --- Chat ---
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=1000)
+
+
+class ChatMessageOut(BaseModel):
+    id: int
+    role: str
+    content: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    record_id: int
+
+
+# --- Support / Where to Buy ---
+
+class SupportStore(BaseModel):
+    type: str          # "Online", "Government", "Local"
+    name: str
+    url: Optional[str] = None
+    note: str
+
+
+class SupportResponse(BaseModel):
+    disease: str
+    disease_readable: str
+    recommended_products: List[str]
+    where_to_buy: List[SupportStore]
+    helpline: str
