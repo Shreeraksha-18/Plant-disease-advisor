@@ -21,6 +21,6 @@ def utcnow() -> datetime:
 
 def ensure_indexes(db) -> None:
     """Create indexes the first time the app boots."""
-    db.users.create_index("username", unique=True)
+    db.users.create_index("email", unique=True)
     db.predictions.create_index("user_id")
     db.chat_messages.create_index("record_id")

@@ -80,8 +80,8 @@ input:focus{outline:none;border-color:var(--green-700);box-shadow:0 0 0 3px var(
     </div>
 
     <form id="form" novalidate>
-      <label for="username">Username</label>
-      <input id="username" name="username" type="text" autocomplete="username" placeholder="Enter your username" required>
+      <label for="username">Email</label>
+      <input id="username" name="username" type="email" autocomplete="email" placeholder="Enter your email address" required>
 
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
@@ -137,7 +137,7 @@ form.addEventListener('submit', async (e) => {
   const u = form.username.value.trim();
   const p = form.password.value;
 
-  if (!u || !p) { msg.textContent = 'Enter your username and password.'; return; }
+  if (!u || !p) { msg.textContent = 'Enter your email and password.'; return; }
   if (mode === 'register' && p !== form.confirm.value) { msg.textContent = 'Passwords do not match.'; return; }
   if (p.length < 4) { msg.textContent = 'Password must be at least 4 characters.'; return; }
 
@@ -151,7 +151,7 @@ form.addEventListener('submit', async (e) => {
       const res = await fetch(`${API}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: u, password: p })
+        body: JSON.stringify({ email: u, password: p })
       });
       const data = await res.json();
       if (!res.ok) {

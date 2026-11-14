@@ -37,7 +37,7 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db=Depends(get_db),
 ) -> dict:
-    """Returns the raw MongoDB user document (dict) for the authenticated user."""
+    """Returns the raw MongoDB user document for the authenticated user."""
     error = HTTPException(
         status_code=401,
         detail="Invalid or expired token",

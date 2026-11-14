@@ -121,25 +121,26 @@ def classes():
 
 @app.post("/auth/register", response_model=UserOut, status_code=201, tags=["auth"])
 def register(payload: UserCreate, db=Depends(get_db)):
-    username = payload.username.strip().lower()
-    if db.users.find_one({"username": username}):
-        raise HTTPException(status_code=409, detail="Username already taken")
+    email = payload.email.strip().lower()
+    if db.users.find_one({"email": email}):
+        raise HTTPException(status_code=409, detail="Email already registered")
 
     result = db.users.insert_one({
-        "username": username,
+        "email": email,
         "password_hash": hash_password(payload.password),
         "created_at": utcnow(),
     })
-    return UserOut(id=str(result.inserted_id), username=username)
+    return UserOut(id=str(result.inserted_id), email=email)
 
 
 @app.post("/auth/login", response_model=Token, tags=["auth"])
 def login(form: OAuth2PasswordRequestForm = Depends(), db=Depends(get_db)):
-    user = db.users.find_one({"username": form.username.strip().lower()})
+    # OAuth2PasswordRequestForm uses 'username' field — we treat it as email
+    user = db.users.find_one({"email": form.username.strip().lower()})
     if user is None or not verify_password(form.password, user["password_hash"]):
         raise HTTPException(
             status_code=401,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return Token(access_token=create_access_token(str(user["_id"])))
@@ -147,7 +148,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db=Depends(get_db)):
 
 @app.get("/auth/me", response_model=UserOut, tags=["auth"])
 def me(current_user: dict = Depends(get_current_user)):
-    return UserOut(id=str(current_user["_id"]), username=current_user["username"])
+    return UserOut(id=str(current_user["_id"]), email=current_user["email"])
 
 
 # ---------- prediction (Create) ----------

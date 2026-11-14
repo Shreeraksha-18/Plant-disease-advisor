@@ -241,7 +241,7 @@
         <button type="button" id="tabReg">Register</button>
       </div>
       <form id="authForm">
-        <div class="field"><label for="username">Username</label><input id="username" autocomplete="username" required minlength="3"></div>
+        <div class="field"><label for="username">Email</label><input id="username" type="email" autocomplete="email" required></div>
         <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required minlength="8"></div>
         <button class="btn full" id="authBtn" type="submit">Log in</button>
         <div id="authMsg"></div>
@@ -333,7 +333,7 @@
           await api("/auth/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: u, password: p })
+            body: JSON.stringify({ email: u, password: p })
           });
         }
         token = null;
@@ -342,7 +342,7 @@
         sessionStorage.setItem("token", token);
         const me = await api("/auth/me");
         $("password").value = "";
-        await enterApp(me.username);
+        await enterApp(me.email);
       } catch (e) {
         msg.innerHTML = '<div class="alert err">' + esc(e.message) + "</div>";
       } finally { btn.disabled = false; }
@@ -357,10 +357,11 @@
     }
     $("logoutBtn").onclick = logout;
 
-    async function enterApp(username) {
+    async function enterApp(email) {
       setView("app");
-      $("userName").textContent = username;
-      $("avatar").textContent = username.charAt(0).toUpperCase();
+      const displayName = email.split("@")[0];
+      $("userName").textContent = displayName;
+      $("avatar").textContent = displayName.charAt(0).toUpperCase();
       openNew();
       await loadHistory();
     }
