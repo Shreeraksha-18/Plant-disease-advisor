@@ -155,7 +155,11 @@ form.addEventListener('submit', async (e) => {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.detail || 'Registration failed');
+        const detail = data.detail;
+        const errMsg = Array.isArray(detail)
+          ? detail.map(d => d.msg || JSON.stringify(d)).join(', ')
+          : (typeof detail === 'string' ? detail : 'Registration failed');
+        throw new Error(errMsg);
       }
       /* Auto-login after register */
       msg.className = 'msg ok';
@@ -165,12 +169,16 @@ form.addEventListener('submit', async (e) => {
     /* ---- LOGIN ---- */
     const loginRes = await fetch(`${API}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u, password: p })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ username: u, password: p })
     });
     const loginData = await loginRes.json();
     if (!loginRes.ok) {
-      throw new Error(loginData.detail || 'Login failed');
+      const detail = loginData.detail;
+      const errMsg = Array.isArray(detail)
+        ? detail.map(d => d.msg || JSON.stringify(d)).join(', ')
+        : (typeof detail === 'string' ? detail : 'Login failed');
+      throw new Error(errMsg);
     }
 
     /* Save token + redirect */
