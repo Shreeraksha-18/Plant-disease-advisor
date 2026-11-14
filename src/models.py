@@ -1,54 +1,26 @@
+"""
+MongoDB collection helpers.
+
+Collections used:
+  - users          : { _id, username, password_hash, created_at }
+  - predictions    : { _id, user_id, disease, confidence, status,
+                       explanation_json, note, image_b64, created_at }
+  - chat_messages  : { _id, record_id, role, content, created_at }
+
+All _id values are MongoDB ObjectId strings (str form).
+"""
+
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import relationship
 
-from src.database import Base
-
-
-def utcnow():
+def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class User(Base):
-    __tablename__ = "users"
+# ---------- index helpers (called once at startup) ----------
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=utcnow)
-
-    predictions = relationship(
-        "PredictionRecord", back_populates="owner", cascade="all, delete-orphan"
-    )
-
-
-class PredictionRecord(Base):
-    __tablename__ = "predictions"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    disease = Column(String(120), nullable=False)
-    confidence = Column(Float, nullable=False)
-    status = Column(String(20), nullable=False)       # "ok" or "uncertain"
-    explanation_json = Column(Text, nullable=True)
-    note = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=utcnow)
-
-    owner = relationship("User", back_populates="predictions")
-    chat_messages = relationship(
-        "ChatMessage", back_populates="prediction", cascade="all, delete-orphan",
-        order_by="ChatMessage.id"
-    )
-
-
-class ChatMessage(Base):
-    __tablename__ = "chat_messages"
-
-    id = Column(Integer, primary_key=True, index=True)
-    record_id = Column(Integer, ForeignKey("predictions.id"), nullable=False, index=True)
-    role = Column(String(10), nullable=False)   # "user" or "assistant"
-    content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=utcnow)
-
-    prediction = relationship("PredictionRecord", back_populates="chat_messages")
+def ensure_indexes(db) -> None:
+    """Create indexes the first time the app boots."""
+    db.users.create_index("username", unique=True)
+    db.predictions.create_index("user_id")
+    db.chat_messages.create_index("record_id")

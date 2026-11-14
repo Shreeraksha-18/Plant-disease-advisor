@@ -23,7 +23,7 @@ class PredictResponse(BaseModel):
     explanation: Optional[Explanation] = None
     message: Optional[str] = None
     request_id: str
-    record_id: Optional[int] = None
+    record_id: Optional[str] = None      # MongoDB ObjectId string
 
 
 class UserCreate(BaseModel):
@@ -32,10 +32,8 @@ class UserCreate(BaseModel):
 
 
 class UserOut(BaseModel):
-    id: int
+    id: str                               # MongoDB ObjectId string
     username: str
-
-    model_config = {"from_attributes": True}
 
 
 class Token(BaseModel):
@@ -44,18 +42,19 @@ class Token(BaseModel):
 
 
 class PredictionOut(BaseModel):
-    id: int
+    id: str                               # MongoDB ObjectId string
     disease: str
     confidence: float
     status: str
     explanation: Optional[Explanation] = None
     note: Optional[str] = None
+    image_b64: Optional[str] = None       # Base64-encoded leaf image
     created_at: datetime
 
 
 class PredictionUpdate(BaseModel):
     note: Optional[str] = Field(default=None, max_length=500)
-    disease: Optional[str] = None        # corrected label, must be a known class
+    disease: Optional[str] = None         # corrected label, must be a known class
 
 
 # --- Chat ---
@@ -65,17 +64,15 @@ class ChatRequest(BaseModel):
 
 
 class ChatMessageOut(BaseModel):
-    id: int
+    id: str                               # MongoDB ObjectId string
     role: str
     content: str
     created_at: datetime
 
-    model_config = {"from_attributes": True}
-
 
 class ChatResponse(BaseModel):
     reply: str
-    record_id: int
+    record_id: str                        # MongoDB ObjectId string
 
 
 # --- Support / Where to Buy ---

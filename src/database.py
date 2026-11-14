@@ -1,18 +1,27 @@
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+load_dotenv()
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-Base = declarative_base()
+MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
+DB_NAME = os.getenv("MONGODB_DB", "plant_advisor")
+
+_client: MongoClient = None
+
+
+def get_client() -> MongoClient:
+    global _client
+    if _client is None:
+        _client = MongoClient(MONGODB_URI)
+    return _client
 
 
 def get_db():
-    db = SessionLocal()
+    """FastAPI dependency — yields the MongoDB database object."""
+    client = get_client()
+    db = client[DB_NAME]
     try:
         yield db
     finally:
-        db.close()
+        pass  # MongoClient manages its own connection pool; no per-request close needed

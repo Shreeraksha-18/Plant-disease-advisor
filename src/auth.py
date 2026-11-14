@@ -3,13 +3,12 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import jwt
+from bson import ObjectId
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
 
 from src.database import get_db
-from src.models import User
 
 load_dotenv()
 
@@ -28,14 +27,17 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: str) -> str:
+    """user_id is the MongoDB ObjectId string."""
     expires = datetime.now(timezone.utc) + timedelta(minutes=TOKEN_MINUTES)
-    return jwt.encode({"sub": str(user_id), "exp": expires}, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode({"sub": user_id, "exp": expires}, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
-) -> User:
+    token: str = Depends(oauth2_scheme),
+    db=Depends(get_db),
+) -> dict:
+    """Returns the raw MongoDB user document (dict) for the authenticated user."""
     error = HTTPException(
         status_code=401,
         detail="Invalid or expired token",
@@ -43,11 +45,11 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = int(payload["sub"])
+        user_id: str = payload["sub"]
     except (jwt.PyJWTError, KeyError, ValueError):
         raise error
 
-    user = db.get(User, user_id)
+    user = db.users.find_one({"_id": ObjectId(user_id)})
     if user is None:
         raise error
     return user
