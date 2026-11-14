@@ -7,6 +7,8 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, HTTPException, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
@@ -326,3 +328,13 @@ def get_support(
         where_to_buy=_DEFAULT_STORES,
         disclaimer=_DEFAULT_DISCLAIMER,
     )
+
+
+# ---------- Serve frontend static files ----------
+_CONSUMER_DIR = Path(__file__).resolve().parent.parent / "consumer"
+if _CONSUMER_DIR.is_dir():
+    app.mount("/consumer", StaticFiles(directory=str(_CONSUMER_DIR), html=True), name="consumer")
+
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    return RedirectResponse(url="/consumer/landing.html")
