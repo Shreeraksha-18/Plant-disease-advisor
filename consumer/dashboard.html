@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnosis Dashboard | Plant Disease Advisor</title>
+<style>
+:root{
+  --green-900:#14301f;
+  --green-700:#2f7a46;
+  --green-600:#3a8a52;
+  --green-100:#e8f2d9;
+  --cream:#faf6ee;
+  --paper:#ffffff;
+  --ink:#1b2a20;
+  --muted:#6b7a6f;
+  --line:#e8e1d2;
+  --amber:#b9772b;
+  --red:#9a3b2c;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--cream);color:var(--ink);display:flex;flex-direction:column;min-height:100vh}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* ===== Top bar ===== */
+.topbar{background:#fffdf8;border-bottom:1px solid var(--line);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-mark{width:28px;height:28px;border-radius:50%;background:var(--green-700);color:#fff;display:grid;place-items:center;font-size:.9rem}
+.brand b{display:block;font-size:.9rem;line-height:1.1;color:var(--green-900)}
+.brand small{display:block;font-size:.65rem;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.user-badge{font-size:.82rem;color:var(--muted)}
+.user-badge strong{color:var(--green-900)}
+.logout-btn{background:none;border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-size:.82rem;color:var(--muted);transition:all .2s}
+.logout-btn:hover{background:#fce8e6;border-color:var(--red);color:var(--red)}
+
+/* ===== Layout ===== */
+.layout{flex:1;display:grid;grid-template-columns:260px 1fr;min-height:0}
+.sidebar{background:#fffdf8;border-right:1px solid var(--line);padding:16px;overflow-y:auto;flex-shrink:0}
+.new-btn{width:100%;background:var(--green-700);color:#fff;border:0;border-radius:10px;padding:11px;font-weight:600;font-size:.9rem;transition:background .2s}
+.new-btn:hover{background:var(--green-900)}
+.history-label{font-size:.7rem;font-weight:700;letter-spacing:.06em;color:var(--green-700);margin:22px 4px 8px}
+.history{list-style:none}
+.history li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 8px;border-radius:8px;cursor:pointer;transition:background .15s}
+.history li:hover{background:var(--cream)}
+.history li.active{background:var(--green-100)}
+.history .name{font-size:.82rem;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.history .meta{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.history .score{font-size:.72rem;font-weight:700;color:var(--green-700);white-space:nowrap}
+.history .score.mid{color:var(--amber)}
+.history .score.low{color:#8a5a33}
+.empty-history{font-size:.82rem;color:var(--muted);text-align:center;padding:24px 8px}
+
+/* ===== Main ===== */
+.main{background:var(--cream);padding:40px 24px;display:flex;justify-content:center;align-items:flex-start;overflow-y:auto}
+.main-inner{width:100%;max-width:520px}
+
+/* Upload panel */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;width:100%;padding:32px 32px 24px;text-align:center}
+.panel-icon{width:32px;height:32px;margin:0 auto 12px;border-radius:9px;background:var(--green-100);display:grid;place-items:center;font-size:.9rem}
+.panel h1{font-size:1.15rem;color:var(--green-900)}
+.panel .hint{font-size:.82rem;color:var(--muted);margin-top:6px}
+
+.drop{margin-top:22px;border:1.5px dashed #dccfae;background:#faf5ec;border-radius:12px;min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:16px;cursor:pointer;transition:background .2s,border-color .2s}
+.drop:hover,.drop.over{background:#f4ecdb;border-color:var(--green-700)}
+.drop .cam{font-size:1.3rem;color:var(--muted)}
+.drop strong{font-size:.9rem;color:var(--ink);margin-top:4px}
+.drop span{font-size:.72rem;color:var(--muted)}
+.drop img{max-height:140px;border-radius:8px}
+.drop input{display:none}
+
+.diagnose{width:100%;margin-top:16px;padding:12px;border:0;border-radius:10px;background:#f6efe1;color:var(--muted);font-size:.88rem;transition:background .2s}
+.diagnose:disabled{cursor:not-allowed}
+.diagnose:not(:disabled){background:var(--green-700);color:#fff;font-weight:600}
+.diagnose:not(:disabled):hover{background:var(--green-900)}
+
+.perks{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.perk .ic{color:var(--green-700);font-size:.95rem}
+.perk b{display:block;font-size:.72rem;margin-top:4px;color:var(--ink)}
+.perk small{display:block;font-size:.66rem;color:var(--muted)}
+
+/* ===== Result Panel ===== */
+.result-panel{display:none}
+.result-panel.show{display:block}
+
+.result-header{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px;margin-bottom:16px}
+.result-disease{font-size:1.25rem;font-weight:700;color:var(--green-900)}
+.result-conf{font-size:.85rem;color:var(--muted);margin-top:4px}
+.conf-bar{height:8px;border-radius:8px;background:var(--green-100);margin-top:8px;overflow:hidden}
+.conf-bar span{display:block;height:100%;background:var(--green-600);border-radius:8px;transition:width .8s ease-out}
+.result-explanation{margin-top:16px;font-size:.88rem;color:var(--ink);line-height:1.7;white-space:pre-wrap}
+
+.action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.action-btn{padding:8px 16px;border-radius:10px;font-size:.82rem;font-weight:600;border:1px solid var(--line);background:var(--paper);color:var(--ink);transition:all .2s}
+.action-btn:hover{background:var(--green-100);border-color:var(--green-700)}
+.action-btn.danger{color:var(--red)}
+.action-btn.danger:hover{background:#fce8e6;border-color:var(--red)}
+.action-btn.primary{background:var(--green-700);color:#fff;border-color:var(--green-700)}
+.action-btn.primary:hover{background:var(--green-900)}
+
+/* ===== Chat ===== */
+.chat-section{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+.chat-title{font-size:.9rem;font-weight:700;color:var(--green-900);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.chat-messages{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;padding-right:4px}
+.chat-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:.85rem;line-height:1.5;word-wrap:break-word}
+.chat-msg.user{background:var(--green-700);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg.assistant{background:var(--green-100);color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.assistant pre{white-space:pre-wrap;font-family:inherit}
+.chat-empty{font-size:.8rem;color:var(--muted);text-align:center;padding:16px}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:#fffdf8;font-size:.88rem;color:var(--ink);resize:none}
+.chat-input:focus{outline:none;border-color:var(--green-700);box-shadow:0 0 0 3px var(--green-100)}
+.chat-send{background:var(--green-700);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:600;font-size:.88rem;transition:background .2s}
+.chat-send:hover{background:var(--green-900)}
+.chat-send:disabled{background:#b8c4ba;cursor:not-allowed}
+
+/* ===== Support / Where to Buy ===== */
+.support-section{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:16px;display:none}
+.support-section.show{display:block}
+.support-title{font-size:.9rem;font-weight:700;color:var(--green-900);margin-bottom:12px}
+.support-product{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.support-product h4{font-size:.88rem;color:var(--green-900);margin-bottom:4px}
+.support-product p{font-size:.78rem;color:var(--muted);margin-bottom:8px}
+.store-links{display:flex;flex-wrap:wrap;gap:6px}
+.store-link{display:inline-block;padding:4px 12px;background:var(--green-100);color:var(--green-700);border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;transition:background .2s}
+.store-link:hover{background:var(--green-700);color:#fff}
+.support-disclaimer{margin-top:12px;padding:10px;background:#fef9ef;border:1px solid #f0ddb8;border-radius:10px;font-size:.78rem;color:var(--amber)}
+
+/* ===== Spinner ===== */
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
+.spinner.dark{border-color:rgba(0,0,0,.1);border-top-color:var(--green-700)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== Toast ===== */
+.toast{position:fixed;bottom:-60px;left:50%;transform:translateX(-50%);background:var(--green-900);color:#fff;padding:12px 24px;border-radius:10px;font-size:.88rem;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:bottom .4s ease;z-index:200;white-space:nowrap}
+.toast.show{bottom:28px}
+.toast.error{background:var(--red)}
+
+/* ===== Mobile sidebar toggle ===== */
+.sidebar-toggle{display:none;background:none;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:1rem;color:var(--ink)}
+
+@media (max-width:760px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none;border-right:0;border-bottom:1px solid var(--line);max-height:300px;position:absolute;top:64px;left:0;right:0;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+  .sidebar.open{display:block}
+  .sidebar-toggle{display:block}
+  .history .name,.history .meta{max-width:220px}
+  .main{padding:24px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Top Bar ===== -->
+<header class="topbar">
+  <a class="brand" href="landing.html">
+    <span class="brand-mark">🌿</span>
+    <span><b>Plant Disease Advisor</b><small>ICAR-aligned AI diagnosis</small></span>
+  </a>
+  <div class="topbar-right">
+    <button class="sidebar-toggle" id="sidebarToggle" title="History">☰</button>
+    <span class="user-badge">👤 <strong id="usernameDisplay">User</strong></span>
+    <button class="logout-btn" id="logoutBtn">Log out</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar" id="sidebar" aria-label="Diagnosis history">
+    <button class="new-btn" type="button" id="newBtn">+ New diagnosis</button>
+    <div class="history-label">HISTORY</div>
+    <ul class="history" id="historyList">
+      <li class="empty-history">Loading…</li>
+    </ul>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- Upload View -->
+      <section class="panel" id="uploadPanel" aria-labelledby="uploadTitle">
+        <div class="panel-icon">🔍</div>
+        <h1 id="uploadTitle">New Diagnosis</h1>
+        <p class="hint">Upload a clear, close-up photo of a single leaf.</p>
+
+        <label class="drop" id="drop" tabindex="0">
+          <input type="file" id="file" accept="image/jpeg,image/png">
+          <span id="dropInner">
+            <span class="cam">📷</span>
+            <strong>Choose a photo</strong>
+            <span>or drag and drop it here (JPEG or PNG)</span>
+          </span>
+        </label>
+
+        <button class="diagnose" id="diagnoseBtn" type="button" disabled>🔍 Diagnose</button>
+
+        <div class="perks">
+          <div class="perk"><div class="ic">⚡</div><b>Under 1 second</b><small>Lightning fast</small></div>
+          <div class="perk"><div class="ic">🛡</div><b>Secure</b><small>Your data is safe</small></div>
+          <div class="perk"><div class="ic">🧠</div><b>AI-powered</b><small>38 disease classes</small></div>
+        </div>
+      </section>
+
+      <!-- Result View -->
+      <div class="result-panel" id="resultPanel">
+        <!-- Result header -->
+        <div class="result-header">
+          <div class="result-disease" id="resDisease"></div>
+          <div class="result-conf" id="resConf"></div>
+          <div class="conf-bar"><span id="resBar" style="width:0"></span></div>
+          <div class="result-explanation" id="resExplanation"></div>
+          <div class="action-row">
+            <button class="action-btn primary" id="chatToggle">💬 Ask AI</button>
+            <button class="action-btn" id="supportToggle">🛒 Where to Buy</button>
+            <button class="action-btn danger" id="deleteBtn">🗑 Delete</button>
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="chat-section" id="chatSection">
+          <div class="chat-title">💬 AI Chat <span style="font-weight:400;font-size:.75rem;color:var(--muted)">— ask follow-up questions about this diagnosis</span></div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-empty">Ask a question about this disease…</div>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about treatment, causes, prevention…" autocomplete="off">
+            <button class="chat-send" id="chatSend">Send</button>
+          </div>
+        </div>
+
+        <!-- Support / Where to Buy -->
+        <div class="support-section" id="supportSection">
+          <div class="support-title">🛒 Where to Buy — Recommended Products</div>
+          <div id="supportContent">Loading…</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== CONFIG ===== */
+const API = 'http://localhost:8000';
+
+/* ===== AUTH CHECK ===== */
+const token = localStorage.getItem('token');
+if (!token) { window.location.href = 'login.html'; }
+const headers = () => ({ 'Authorization': 'Bearer ' + localStorage.getItem('token') });
+
+/* Display username */
+document.getElementById('usernameDisplay').textContent = localStorage.getItem('username') || 'User';
+
+/* ===== STATE ===== */
+let currentFile = null;
+let currentPrediction = null;  // { id, predicted_class, confidence, explanation, ... }
+let predictions = [];
+
+/* ===== DOM REFS ===== */
+const uploadPanel  = document.getElementById('uploadPanel');
+const resultPanel  = document.getElementById('resultPanel');
+const drop         = document.getElementById('drop');
+const fileInput    = document.getElementById('file');
+const dropInner    = document.getElementById('dropInner');
+const diagnoseBtn  = document.getElementById('diagnoseBtn');
+const historyList  = document.getElementById('historyList');
+const chatMessages = document.getElementById('chatMessages');
+const chatInput    = document.getElementById('chatInput');
+const chatSend     = document.getElementById('chatSend');
+const supportSection = document.getElementById('supportSection');
+const supportContent = document.getElementById('supportContent');
+
+const dropOriginal = dropInner.innerHTML;
+
+/* ===== TOAST ===== */
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ===== LOGOUT ===== */
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  window.location.href = 'login.html';
+});
+
+/* ===== MOBILE SIDEBAR ===== */
+document.getElementById('sidebarToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ===== FILE UPLOAD ===== */
+function showFile(f) {
+  if (!f || !/^image\/(jpeg|png)$/.test(f.type)) {
+    showToast('Please choose a JPEG or PNG photo.', true);
+    return;
+  }
+  currentFile = f;
+  const url = URL.createObjectURL(f);
+  dropInner.innerHTML = '<img src="' + url + '" alt="Selected leaf" style="max-height:140px;border-radius:8px">';
+  diagnoseBtn.disabled = false;
+}
+
+function resetUpload() {
+  fileInput.value = '';
+  currentFile = null;
+  dropInner.innerHTML = dropOriginal;
+  diagnoseBtn.disabled = true;
+  diagnoseBtn.textContent = '🔍 Diagnose';
+}
+
+fileInput.addEventListener('change', e => showFile(e.target.files[0]));
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => showFile(e.dataTransfer.files[0]));
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+
+/* ===== NEW DIAGNOSIS ===== */
+document.getElementById('newBtn').addEventListener('click', () => {
+  showUploadView();
+  document.getElementById('sidebar').classList.remove('open');
+});
+
+function showUploadView() {
+  uploadPanel.style.display = 'block';
+  resultPanel.classList.remove('show');
+  currentPrediction = null;
+  resetUpload();
+  /* Remove active from history */
+  historyList.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+}
+
+/* ===== DIAGNOSE ===== */
+diagnoseBtn.addEventListener('click', async () => {
+  if (!currentFile) return;
+  diagnoseBtn.disabled = true;
+  diagnoseBtn.innerHTML = '<span class="spinner"></span> Diagnosing…';
+
+  const formData = new FormData();
+  formData.append('file', currentFile);
+
+  try {
+    const res = await fetch(`${API}/predict`, {
+      method: 'POST',
+      headers: headers(),
+      body: formData
+    });
+
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Prediction failed'); }
+
+    const data = await res.json();
+    currentPrediction = data;
+    showResultView(data);
+    loadHistory(); // refresh sidebar
+    showToast('✓ Diagnosis complete!');
+
+  } catch (err) {
+    showToast(err.message, true);
+    diagnoseBtn.disabled = false;
+    diagnoseBtn.textContent = '🔍 Diagnose';
+  }
+});
+
+/* ===== SHOW RESULT ===== */
+function showResultView(pred) {
+  uploadPanel.style.display = 'none';
+  resultPanel.classList.add('show');
+  currentPrediction = pred;
+
+  /* Header */
+  const disease = pred.predicted_class.replace(/_/g, ' ').replace(/___/g, ' — ');
+  document.getElementById('resDisease').textContent = disease;
+  document.getElementById('resConf').textContent = `Confidence: ${pred.confidence}%`;
+  const bar = document.getElementById('resBar');
+  bar.style.width = '0';
+  setTimeout(() => { bar.style.width = pred.confidence + '%'; }, 50);
+  document.getElementById('resExplanation').textContent = pred.explanation || '';
+
+  /* Reset chat & support */
+  supportSection.classList.remove('show');
+  chatMessages.innerHTML = '<div class="chat-empty">Ask a question about this disease…</div>';
+  chatInput.value = '';
+
+  /* Load existing chat history */
+  loadChatHistory(pred.id);
+
+  /* Mark active in sidebar */
+  historyList.querySelectorAll('li').forEach(li => {
+    li.classList.toggle('active', li.dataset.id == pred.id);
+  });
+}
+
+/* ===== LOAD HISTORY ===== */
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/predictions`, { headers: headers() });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
+    if (!res.ok) throw new Error('Failed to load history');
+    predictions = await res.json();
+
+    if (predictions.length === 0) {
+      historyList.innerHTML = '<li class="empty-history">No diagnoses yet. Upload a leaf photo to start!</li>';
+      return;
+    }
+
+    historyList.innerHTML = predictions.map(p => {
+      const name = p.predicted_class.replace(/_/g, ' ').replace(/___/g, ' — ');
+      const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      const conf = Math.round(p.confidence);
+      let scoreClass = 'score';
+      if (conf < 70) scoreClass += ' low';
+      else if (conf < 90) scoreClass += ' mid';
+      const isActive = currentPrediction && currentPrediction.id === p.id ? ' active' : '';
+      return `<li data-id="${p.id}" class="${isActive}">
+        <div><div class="name">${name}</div><div class="meta">${p.image_name || ''} · ${date}</div></div>
+        <span class="${scoreClass}">${conf}%</span>
+      </li>`;
+    }).join('');
+
+    /* Click handler for history items */
+    historyList.querySelectorAll('li[data-id]').forEach(li => {
+      li.addEventListener('click', () => {
+        const pred = predictions.find(p => p.id == li.dataset.id);
+        if (pred) {
+          showResultView(pred);
+          document.getElementById('sidebar').classList.remove('open');
+        }
+      });
+    });
+
+  } catch (err) {
+    historyList.innerHTML = '<li class="empty-history">Failed to load history</li>';
+  }
+}
+
+/* ===== DELETE ===== */
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+  if (!currentPrediction) return;
+  if (!confirm('Delete this diagnosis? This cannot be undone.')) return;
+
+  try {
+    const res = await fetch(`${API}/predictions/${currentPrediction.id}`, {
+      method: 'DELETE',
+      headers: headers()
+    });
+    if (!res.ok) throw new Error('Delete failed');
+    showToast('✓ Diagnosis deleted');
+    showUploadView();
+    loadHistory();
+  } catch (err) {
+    showToast(err.message, true);
+  }
+});
+
+/* ===== CHAT ===== */
+async function loadChatHistory(predId) {
+  try {
+    const res = await fetch(`${API}/predictions/${predId}/chat`, { headers: headers() });
+    if (!res.ok) return;
+    const messages = await res.json();
+    if (messages.length > 0) {
+      chatMessages.innerHTML = messages.map(m =>
+        `<div class="chat-msg ${m.role}">${escapeHtml(m.content)}</div>`
+      ).join('');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  } catch (err) { /* silent */ }
+}
+
+chatSend.addEventListener('click', sendChatMessage);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
+
+async function sendChatMessage() {
+  const question = chatInput.value.trim();
+  if (!question || !currentPrediction) return;
+
+  /* Clear empty state */
+  const empty = chatMessages.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  /* Add user message */
+  appendChat('user', question);
+  chatInput.value = '';
+  chatSend.disabled = true;
+
+  /* Add typing indicator */
+  const typing = document.createElement('div');
+  typing.className = 'chat-msg assistant';
+  typing.innerHTML = '<span class="spinner dark"></span> Thinking…';
+  chatMessages.appendChild(typing);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  try {
+    const res = await fetch(`${API}/predictions/${currentPrediction.id}/chat`, {
+      method: 'POST',
+      headers: { ...headers(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Chat failed'); }
+    const data = await res.json();
+    typing.remove();
+    appendChat('assistant', data.answer);
+  } catch (err) {
+    typing.remove();
+    appendChat('assistant', '⚠ ' + (err.message || 'Failed to get response'));
+  }
+  chatSend.disabled = false;
+  chatInput.focus();
+}
+
+function appendChat(role, text) {
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+/* Chat toggle button */
+document.getElementById('chatToggle').addEventListener('click', () => {
+  const cs = document.getElementById('chatSection');
+  cs.style.display = cs.style.display === 'none' ? 'block' : (cs.style.display === '' ? 'block' : 'none');
+  if (cs.style.display !== 'none') chatInput.focus();
+});
+
+/* ===== SUPPORT / WHERE TO BUY ===== */
+document.getElementById('supportToggle').addEventListener('click', async () => {
+  if (!currentPrediction) return;
+
+  if (supportSection.classList.contains('show')) {
+    supportSection.classList.remove('show');
+    return;
+  }
+
+  supportContent.innerHTML = '<span class="spinner dark"></span> Loading…';
+  supportSection.classList.add('show');
+
+  try {
+    const res = await fetch(`${API}/predictions/${currentPrediction.id}/support`, { headers: headers() });
+    if (!res.ok) throw new Error('Failed to load support info');
+    const data = await res.json();
+
+    let html = '';
+    if (data.products && data.products.length > 0) {
+      html += data.products.map(p => `
+        <div class="support-product">
+          <h4>${escapeHtml(p.name)}</h4>
+          <p>${escapeHtml(p.active_ingredient || p.description || '')}</p>
+          <div class="store-links">
+            ${(p.stores || []).map(s => `<a class="store-link" href="${s.url}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    } else {
+      html += '<p style="font-size:.85rem;color:var(--muted)">No specific product recommendations available for this disease.</p>';
+    }
+
+    if (data.disclaimer) {
+      html += `<div class="support-disclaimer">⚠ ${escapeHtml(data.disclaimer)}</div>`;
+    }
+
+    supportContent.innerHTML = html;
+  } catch (err) {
+    supportContent.innerHTML = '<p style="color:var(--red);font-size:.85rem">Failed to load recommendations.</p>';
+  }
+});
+
+/* ===== UTILS ===== */
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ===== INIT ===== */
+loadHistory();
+</script>
+</body>
+</html>

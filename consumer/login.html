@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in | Plant Disease Advisor</title>
+<style>
+:root{
+  --green-900:#14301f;
+  --green-700:#2f7a46;
+  --green-600:#3a8a52;
+  --green-100:#e8f2d9;
+  --cream:#faf6ee;
+  --paper:#ffffff;
+  --ink:#1b2a20;
+  --muted:#6b7a6f;
+  --line:#e8e1d2;
+  --amber:#b9772b;
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--cream);color:var(--ink);display:flex;flex-direction:column}
+button,input{font:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+.topbar{background:var(--green-900);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.brand{display:flex;align-items:center;gap:12px;color:#fff;font-weight:700;font-size:1.1rem;text-decoration:none}
+.brand-mark{width:36px;height:36px;border-radius:10px;background:var(--green-700);display:grid;place-items:center;font-size:1.1rem}
+.home-link{color:#c9d8cd;font-size:.88rem;text-decoration:none;transition:color .2s}
+.home-link:hover{color:#fff}
+
+main{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:72px 20px}
+.card{width:100%;max-width:420px;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:36px 32px 32px;box-shadow:0 10px 30px rgba(20,48,31,.08)}
+.logo{width:56px;height:56px;margin:0 auto 14px;border-radius:16px;background:var(--green-100);display:grid;place-items:center;font-size:1.9rem}
+.card h1{text-align:center;font-size:1.6rem;color:var(--green-900)}
+.tagline{text-align:center;color:var(--muted);font-size:.92rem;margin-top:6px}
+
+.tabs{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--cream)}
+.tab{border:0;background:transparent;border-radius:9px;padding:10px;font-weight:600;font-size:.9rem;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.tab[aria-selected="true"]{background:var(--green-700);color:#fff}
+.tab:not([aria-selected="true"]):hover{background:var(--green-100)}
+
+form{margin-top:22px}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:6px}
+input{width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fffdf8;color:var(--ink);margin-bottom:18px;font-size:.95rem}
+input:focus{outline:none;border-color:var(--green-700);box-shadow:0 0 0 3px var(--green-100)}
+.confirm{display:none}
+.register .confirm{display:block}
+.submit{width:100%;padding:14px;border:0;border-radius:12px;background:var(--green-700);color:#fff;font-weight:700;font-size:.98rem;cursor:pointer;transition:background .2s}
+.submit:hover{background:var(--green-900)}
+.submit:disabled{background:#b8c4ba;cursor:not-allowed}
+.msg{margin-top:12px;text-align:center;font-size:.85rem;min-height:1.2em;color:#9a3b2c}
+.msg.ok{color:var(--green-700)}
+
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:480px){
+  main{padding:32px 16px}
+  .card{padding:28px 22px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="landing.html"><span class="brand-mark">🌿</span>Plant Disease Advisor</a>
+  <a class="home-link" href="landing.html">← Back to home</a>
+</header>
+
+<main>
+  <section class="card" id="card" aria-labelledby="title">
+    <div class="logo" aria-hidden="true">🍃</div>
+    <h1 id="title">Welcome</h1>
+    <p class="tagline">Diagnose plant leaf diseases from a photo</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tabLogin" aria-selected="true" type="button">Log in</button>
+      <button class="tab" role="tab" id="tabRegister" aria-selected="false" type="button">Register</button>
+    </div>
+
+    <form id="form" novalidate>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" placeholder="Enter your username" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+
+      <div class="confirm">
+        <label for="confirm">Confirm password</label>
+        <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="Re-enter your password">
+      </div>
+
+      <button class="submit" id="submit" type="submit">Log in</button>
+      <p class="msg" id="msg" role="status"></p>
+    </form>
+  </section>
+</main>
+
+<script>
+/* ===== CONFIG ===== */
+const API = 'http://localhost:8000';
+
+/* If already logged in, go to dashboard */
+if (localStorage.getItem('token')) {
+  window.location.href = 'dashboard.html';
+}
+
+const card     = document.getElementById('card');
+const tabLogin = document.getElementById('tabLogin');
+const tabReg   = document.getElementById('tabRegister');
+const submitBtn= document.getElementById('submit');
+const msg      = document.getElementById('msg');
+const form     = document.getElementById('form');
+let mode = 'login';
+
+function setMode(m) {
+  mode = m;
+  const isLogin = m === 'login';
+  card.classList.toggle('register', !isLogin);
+  tabLogin.setAttribute('aria-selected', isLogin);
+  tabReg.setAttribute('aria-selected', !isLogin);
+  submitBtn.textContent = isLogin ? 'Log in' : 'Create account';
+  document.getElementById('password').autocomplete = isLogin ? 'current-password' : 'new-password';
+  msg.textContent = '';
+  msg.className = 'msg';
+}
+
+tabLogin.addEventListener('click', () => setMode('login'));
+tabReg.addEventListener('click', () => setMode('register'));
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  msg.className = 'msg';
+  msg.textContent = '';
+
+  const u = form.username.value.trim();
+  const p = form.password.value;
+
+  if (!u || !p) { msg.textContent = 'Enter your username and password.'; return; }
+  if (mode === 'register' && p !== form.confirm.value) { msg.textContent = 'Passwords do not match.'; return; }
+  if (p.length < 4) { msg.textContent = 'Password must be at least 4 characters.'; return; }
+
+  /* Disable button + spinner */
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner"></span>' + (mode === 'login' ? 'Logging in…' : 'Creating account…');
+
+  try {
+    if (mode === 'register') {
+      /* ---- REGISTER ---- */
+      const res = await fetch(`${API}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || 'Registration failed');
+      }
+      /* Auto-login after register */
+      msg.className = 'msg ok';
+      msg.textContent = '✓ Account created! Logging you in…';
+    }
+
+    /* ---- LOGIN ---- */
+    const loginRes = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    });
+    const loginData = await loginRes.json();
+    if (!loginRes.ok) {
+      throw new Error(loginData.detail || 'Login failed');
+    }
+
+    /* Save token + redirect */
+    localStorage.setItem('token', loginData.access_token);
+    localStorage.setItem('username', u);
+    msg.className = 'msg ok';
+    msg.textContent = '✓ Success! Redirecting…';
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
+
+  } catch (err) {
+    msg.className = 'msg';
+    msg.textContent = err.message || 'Something went wrong. Check your connection.';
+    submitBtn.disabled = false;
+    submitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+  }
+});
+</script>
+</body>
+</html>
