@@ -362,8 +362,10 @@ diagnoseBtn.addEventListener('click', async () => {
     if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Prediction failed'); }
 
     const data = await res.json();
-    currentPrediction = data;
-    showResultView(data);
+    // Fetch full record (includes image_b64, flat fields) then show it
+    const fullRecord = await fetch(`${API}/predictions/${data.record_id}`, { headers: headers() }).then(r => r.json());
+    currentPrediction = fullRecord;
+    showResultView(fullRecord);
     loadHistory(); // refresh sidebar
     showToast('✓ Diagnosis complete!');
 
@@ -395,9 +397,9 @@ function showResultView(pred) {
   /* Leaf image — stored as Base64 in MongoDB */
   const imgBox = document.getElementById('resImage');
   if (pred.image_b64) {
-    imgBox.innerHTML = `<img src="data:image/jpeg;base64,${pred.image_b64}" alt="Uploaded leaf" style="max-width:100%;max-height:200px;border-radius:12px;display:block;margin:12px 0">`;
+    imgBox.innerHTML = `<img src="data:image/jpeg;base64,${pred.image_b64}" alt="Uploaded leaf" style="max-width:100%;max-height:220px;border-radius:12px;display:block;margin:14px auto;box-shadow:0 2px 8px rgba(0,0,0,.1)">`;
   } else {
-    imgBox.innerHTML = '';
+    imgBox.innerHTML = '<div style="margin:12px 0;padding:16px;background:#f5f5f0;border-radius:12px;text-align:center;font-size:.82rem;color:var(--muted)">📷 Photo not available</div>';
   }
 
   /* Explanation — nested object from new API */
