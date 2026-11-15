@@ -352,22 +352,28 @@ diagnoseBtn.addEventListener('click', async () => {
   formData.append('file', currentFile);
 
   try {
+    /* Step 1: run prediction */
     const res = await fetch(`${API}/predict`, {
       method: 'POST',
       headers: headers(),
       body: formData
     });
-
     if (res.status === 401) { localStorage.removeItem('token'); window.location.href = 'login.html'; return; }
     if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Prediction failed'); }
-
     const data = await res.json();
-    // Fetch full record (includes image_b64, flat fields) then show it
-    const fullRecord = await fetch(`${API}/predictions/${data.record_id}`, { headers: headers() }).then(r => r.json());
-    currentPrediction = fullRecord;
+
+    if (!data.record_id) throw new Error('No record ID returned from server');
+
+    /* Step 2: fetch full record (has image_b64, flat disease/confidence fields) */
+    diagnoseBtn.innerHTML = '<span class="spinner"></span> Loading result…';
+    const recRes = await fetch(`${API}/predictions/${data.record_id}`, { headers: headers() });
+    if (!recRes.ok) throw new Error('Failed to load prediction record');
+    const fullRecord = await recRes.json();
+
+    /* Step 3: show result then refresh sidebar */
     showResultView(fullRecord);
-    loadHistory(); // refresh sidebar
     showToast('✓ Diagnosis complete!');
+    loadHistory();
 
   } catch (err) {
     showToast(err.message, true);
@@ -382,11 +388,11 @@ function showResultView(pred) {
   resultPanel.classList.add('show');
   currentPrediction = pred;
 
-  /* Header — API returns 'disease' as "Tomato___Late_blight", confidence as 0-1 float */
-  const rawDisease = pred.disease || pred.predicted_class || 'Unknown';
+  /* Header */
+  const rawDisease = (pred.disease || pred.predicted_class || 'Unknown');
   const disease = rawDisease.replace(/___/g, ' — ').replace(/_/g, ' ');
-  const conf = pred.confidence != null ? pred.confidence : 0;
-  const confPct = conf <= 1 ? (conf * 100).toFixed(1) : conf.toFixed(1);
+  const conf = (pred.confidence != null && !isNaN(pred.confidence)) ? Number(pred.confidence) : 0;
+  const confPct = (conf <= 1 ? conf * 100 : conf).toFixed(1);
 
   document.getElementById('resDisease').textContent = disease;
   document.getElementById('resConf').textContent = `Confidence: ${confPct}%`;
@@ -394,15 +400,16 @@ function showResultView(pred) {
   bar.style.width = '0';
   setTimeout(() => { bar.style.width = confPct + '%'; }, 50);
 
-  /* Leaf image — stored as Base64 in MongoDB */
+  /* Leaf image */
   const imgBox = document.getElementById('resImage');
   if (pred.image_b64) {
-    imgBox.innerHTML = `<img src="data:image/jpeg;base64,${pred.image_b64}" alt="Uploaded leaf" style="max-width:100%;max-height:220px;border-radius:12px;display:block;margin:14px auto;box-shadow:0 2px 8px rgba(0,0,0,.1)">`;
+    imgBox.innerHTML = `<img src="data:image/jpeg;base64,${pred.image_b64}" alt="Uploaded leaf"
+      style="max-width:100%;max-height:220px;border-radius:12px;display:block;margin:14px auto;box-shadow:0 2px 8px rgba(0,0,0,.1)">`;
   } else {
-    imgBox.innerHTML = '<div style="margin:12px 0;padding:16px;background:#f5f5f0;border-radius:12px;text-align:center;font-size:.82rem;color:var(--muted)">📷 Photo not available</div>';
+    imgBox.innerHTML = '<div style="margin:12px 0;padding:12px;background:#f5f5f0;border-radius:10px;text-align:center;font-size:.82rem;color:var(--muted)">📷 Photo not available</div>';
   }
 
-  /* Explanation — nested object from new API */
+  /* Explanation */
   const exp = pred.explanation;
   if (exp && typeof exp === 'object') {
     let txt = exp.summary || '';
@@ -411,7 +418,8 @@ function showResultView(pred) {
     if (exp.prevention && exp.prevention.length) txt += '\n\nPrevention:\n• ' + exp.prevention.join('\n• ');
     document.getElementById('resExplanation').textContent = txt;
   } else {
-    document.getElementById('resExplanation').textContent = pred.message || (pred.status === 'uncertain' ? 'Model was not confident. Upload a clearer photo.' : '');
+    document.getElementById('resExplanation').textContent =
+      pred.message || (pred.status === 'uncertain' ? 'Model was not confident. Upload a clearer close-up photo of a single leaf.' : '');
   }
 
   /* Reset chat & support */
@@ -419,12 +427,12 @@ function showResultView(pred) {
   chatMessages.innerHTML = '<div class="chat-empty">Ask a question about this disease…</div>';
   chatInput.value = '';
 
-  /* Load existing chat history */
-  loadChatHistory(pred.id || pred.record_id);
+  /* Load chat history */
+  loadChatHistory(pred.id);
 
   /* Mark active in sidebar */
   historyList.querySelectorAll('li').forEach(li => {
-    li.classList.toggle('active', li.dataset.id == (pred.id || pred.record_id));
+    li.classList.toggle('active', li.dataset.id === pred.id);
   });
 }
 
