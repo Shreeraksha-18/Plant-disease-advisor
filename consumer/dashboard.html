@@ -256,7 +256,8 @@ if (!token) { window.location.href = 'login.html'; }
 const headers = () => ({ 'Authorization': 'Bearer ' + localStorage.getItem('token') });
 
 /* Display username */
-document.getElementById('usernameDisplay').textContent = localStorage.getItem('username') || 'User';
+const storedUser = localStorage.getItem('username') || 'User';
+document.getElementById('usernameDisplay').textContent = storedUser;
 
 /* ===== STATE ===== */
 let currentFile = null;
@@ -378,14 +379,28 @@ function showResultView(pred) {
   resultPanel.classList.add('show');
   currentPrediction = pred;
 
-  /* Header */
-  const disease = pred.predicted_class.replace(/_/g, ' ').replace(/___/g, ' — ');
+  /* Header — API returns 'disease' as "Tomato___Late_blight", confidence as 0-1 float */
+  const rawDisease = pred.disease || pred.predicted_class || 'Unknown';
+  const disease = rawDisease.replace(/___/g, ' — ').replace(/_/g, ' ');
+  const confPct = pred.confidence <= 1 ? (pred.confidence * 100).toFixed(1) : pred.confidence.toFixed(1);
+
   document.getElementById('resDisease').textContent = disease;
-  document.getElementById('resConf').textContent = `Confidence: ${pred.confidence}%`;
+  document.getElementById('resConf').textContent = `Confidence: ${confPct}%`;
   const bar = document.getElementById('resBar');
   bar.style.width = '0';
-  setTimeout(() => { bar.style.width = pred.confidence + '%'; }, 50);
-  document.getElementById('resExplanation').textContent = pred.explanation || '';
+  setTimeout(() => { bar.style.width = confPct + '%'; }, 50);
+
+  /* Explanation — nested object from new API */
+  const exp = pred.explanation;
+  if (exp && typeof exp === 'object') {
+    let txt = exp.summary || '';
+    if (exp.symptoms && exp.symptoms.length) txt += '\n\nSymptoms:\n• ' + exp.symptoms.join('\n• ');
+    if (exp.causes   && exp.causes.length)   txt += '\n\nCauses:\n• '   + exp.causes.join('\n• ');
+    if (exp.prevention && exp.prevention.length) txt += '\n\nPrevention:\n• ' + exp.prevention.join('\n• ');
+    document.getElementById('resExplanation').textContent = txt;
+  } else {
+    document.getElementById('resExplanation').textContent = pred.message || '';
+  }
 
   /* Reset chat & support */
   supportSection.classList.remove('show');
@@ -393,11 +408,11 @@ function showResultView(pred) {
   chatInput.value = '';
 
   /* Load existing chat history */
-  loadChatHistory(pred.id);
+  loadChatHistory(pred.id || pred.record_id);
 
   /* Mark active in sidebar */
   historyList.querySelectorAll('li').forEach(li => {
-    li.classList.toggle('active', li.dataset.id == pred.id);
+    li.classList.toggle('active', li.dataset.id == (pred.id || pred.record_id));
   });
 }
 
@@ -415,15 +430,16 @@ async function loadHistory() {
     }
 
     historyList.innerHTML = predictions.map(p => {
-      const name = p.predicted_class.replace(/_/g, ' ').replace(/___/g, ' — ');
+      const rawDisease = p.disease || p.predicted_class || 'Unknown';
+      const name = rawDisease.replace(/___/g, ' — ').replace(/_/g, ' ');
       const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-      const conf = Math.round(p.confidence);
+      const conf = p.confidence <= 1 ? Math.round(p.confidence * 100) : Math.round(p.confidence);
       let scoreClass = 'score';
       if (conf < 70) scoreClass += ' low';
       else if (conf < 90) scoreClass += ' mid';
       const isActive = currentPrediction && currentPrediction.id === p.id ? ' active' : '';
       return `<li data-id="${p.id}" class="${isActive}">
-        <div><div class="name">${name}</div><div class="meta">${p.image_name || ''} · ${date}</div></div>
+        <div><div class="name">${name}</div><div class="meta">${date}</div></div>
         <span class="${scoreClass}">${conf}%</span>
       </li>`;
     }).join('');
@@ -505,12 +521,16 @@ async function sendChatMessage() {
     const res = await fetch(`${API}/predictions/${currentPrediction.id}/chat`, {
       method: 'POST',
       headers: { ...headers(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question })
+      body: JSON.stringify({ message: question })
     });
-    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || 'Chat failed'); }
+    if (!res.ok) {
+      const d = await res.json();
+      const detail = d.detail;
+      throw new Error(Array.isArray(detail) ? detail.map(x => x.msg).join(', ') : (detail || 'Chat failed'));
+    }
     const data = await res.json();
     typing.remove();
-    appendChat('assistant', data.answer);
+    appendChat('assistant', data.reply || data.answer || 'No response');
   } catch (err) {
     typing.remove();
     appendChat('assistant', '⚠ ' + (err.message || 'Failed to get response'));

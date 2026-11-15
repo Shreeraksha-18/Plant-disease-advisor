@@ -183,7 +183,7 @@ form.addEventListener('submit', async (e) => {
 
     /* Save token + redirect */
     localStorage.setItem('token', loginData.access_token);
-    localStorage.setItem('username', u);
+    localStorage.setItem('username', u);  /* u is the email */
     msg.className = 'msg ok';
     msg.textContent = '✓ Success! Redirecting…';
     setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
