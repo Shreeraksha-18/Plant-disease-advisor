@@ -595,28 +595,49 @@ document.getElementById('supportToggle').addEventListener('click', async () => {
     if (!res.ok) throw new Error('Failed to load support info');
     const data = await res.json();
 
+    /* API returns: { recommended_products: [str], where_to_buy: [{type,name,url,note}], disclaimer, disease_readable } */
     let html = '';
-    if (data.products && data.products.length > 0) {
-      html += data.products.map(p => `
-        <div class="support-product">
-          <h4>${escapeHtml(p.name)}</h4>
-          <p>${escapeHtml(p.active_ingredient || p.description || '')}</p>
-          <div class="store-links">
-            ${(p.stores || []).map(s => `<a class="store-link" href="${s.url}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a>`).join('')}
-          </div>
-        </div>
-      `).join('');
-    } else {
-      html += '<p style="font-size:.85rem;color:var(--muted)">No specific product recommendations available for this disease.</p>';
+
+    /* Disease label */
+    if (data.disease_readable) {
+      html += `<p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">For: <strong style="color:var(--ink)">${escapeHtml(data.disease_readable)}</strong></p>`;
     }
 
+    /* Recommended products (list of strings) */
+    if (data.recommended_products && data.recommended_products.length > 0) {
+      html += '<div class="support-title" style="font-size:.82rem;margin-bottom:8px">🧪 Recommended active ingredients</div>';
+      html += '<div class="store-links" style="margin-bottom:16px">';
+      html += data.recommended_products.map(p =>
+        `<span style="display:inline-block;padding:4px 12px;background:var(--green-100);color:var(--green-900);border-radius:8px;font-size:.78rem;font-weight:600;margin:3px">${escapeHtml(p)}</span>`
+      ).join('');
+      html += '</div>';
+    } else {
+      html += '<p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">No specific product recommendations available. Consult a local agriculture officer.</p>';
+    }
+
+    /* Where to buy stores */
+    if (data.where_to_buy && data.where_to_buy.length > 0) {
+      html += '<div class="support-title" style="font-size:.82rem;margin-bottom:8px">🏪 Where to buy</div>';
+      html += data.where_to_buy.map(s => {
+        const typeBadge = s.type === 'Online' ? '🌐' : s.type === 'Government' ? '🏛️' : '🏬';
+        const nameHtml = s.url
+          ? `<a class="store-link" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a>`
+          : `<strong>${escapeHtml(s.name)}</strong>`;
+        return `<div class="support-product" style="margin-bottom:8px">
+          <h4>${typeBadge} ${nameHtml}</h4>
+          <p>${escapeHtml(s.note || '')}</p>
+        </div>`;
+      }).join('');
+    }
+
+    /* Disclaimer */
     if (data.disclaimer) {
       html += `<div class="support-disclaimer">⚠ ${escapeHtml(data.disclaimer)}</div>`;
     }
 
     supportContent.innerHTML = html;
   } catch (err) {
-    supportContent.innerHTML = '<p style="color:var(--red);font-size:.85rem">Failed to load recommendations.</p>';
+    supportContent.innerHTML = `<p style="color:var(--red);font-size:.85rem">Failed to load recommendations: ${escapeHtml(err.message)}</p>`;
   }
 });
 
