@@ -212,6 +212,7 @@ button{font:inherit;cursor:pointer}
           <div class="result-disease" id="resDisease"></div>
           <div class="result-conf" id="resConf"></div>
           <div class="conf-bar"><span id="resBar" style="width:0"></span></div>
+          <div id="resImage"></div>
           <div class="result-explanation" id="resExplanation"></div>
           <div class="action-row">
             <button class="action-btn primary" id="chatToggle">💬 Ask AI</button>
@@ -382,7 +383,8 @@ function showResultView(pred) {
   /* Header — API returns 'disease' as "Tomato___Late_blight", confidence as 0-1 float */
   const rawDisease = pred.disease || pred.predicted_class || 'Unknown';
   const disease = rawDisease.replace(/___/g, ' — ').replace(/_/g, ' ');
-  const confPct = pred.confidence <= 1 ? (pred.confidence * 100).toFixed(1) : pred.confidence.toFixed(1);
+  const conf = pred.confidence != null ? pred.confidence : 0;
+  const confPct = conf <= 1 ? (conf * 100).toFixed(1) : conf.toFixed(1);
 
   document.getElementById('resDisease').textContent = disease;
   document.getElementById('resConf').textContent = `Confidence: ${confPct}%`;
@@ -390,16 +392,24 @@ function showResultView(pred) {
   bar.style.width = '0';
   setTimeout(() => { bar.style.width = confPct + '%'; }, 50);
 
+  /* Leaf image — stored as Base64 in MongoDB */
+  const imgBox = document.getElementById('resImage');
+  if (pred.image_b64) {
+    imgBox.innerHTML = `<img src="data:image/jpeg;base64,${pred.image_b64}" alt="Uploaded leaf" style="max-width:100%;max-height:200px;border-radius:12px;display:block;margin:12px 0">`;
+  } else {
+    imgBox.innerHTML = '';
+  }
+
   /* Explanation — nested object from new API */
   const exp = pred.explanation;
   if (exp && typeof exp === 'object') {
     let txt = exp.summary || '';
-    if (exp.symptoms && exp.symptoms.length) txt += '\n\nSymptoms:\n• ' + exp.symptoms.join('\n• ');
-    if (exp.causes   && exp.causes.length)   txt += '\n\nCauses:\n• '   + exp.causes.join('\n• ');
+    if (exp.symptoms   && exp.symptoms.length)   txt += '\n\nSymptoms:\n• '   + exp.symptoms.join('\n• ');
+    if (exp.causes     && exp.causes.length)     txt += '\n\nCauses:\n• '     + exp.causes.join('\n• ');
     if (exp.prevention && exp.prevention.length) txt += '\n\nPrevention:\n• ' + exp.prevention.join('\n• ');
     document.getElementById('resExplanation').textContent = txt;
   } else {
-    document.getElementById('resExplanation').textContent = pred.message || '';
+    document.getElementById('resExplanation').textContent = pred.message || (pred.status === 'uncertain' ? 'Model was not confident. Upload a clearer photo.' : '');
   }
 
   /* Reset chat & support */
@@ -444,13 +454,17 @@ async function loadHistory() {
       </li>`;
     }).join('');
 
-    /* Click handler for history items */
+    /* Click handler for history items — fetch full detail so image_b64 is included */
     historyList.querySelectorAll('li[data-id]').forEach(li => {
-      li.addEventListener('click', () => {
-        const pred = predictions.find(p => p.id == li.dataset.id);
-        if (pred) {
+      li.addEventListener('click', async () => {
+        try {
+          const res = await fetch(`${API}/predictions/${li.dataset.id}`, { headers: headers() });
+          if (!res.ok) throw new Error('Failed to load prediction');
+          const pred = await res.json();
           showResultView(pred);
           document.getElementById('sidebar').classList.remove('open');
+        } catch (err) {
+          showToast(err.message, true);
         }
       });
     });
